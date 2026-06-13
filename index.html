@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blue Ocean Strategy Workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --ink:#15191F; --muted:#5B6670; --faint:#8A949C;
+  --paper:#ECEFEC; --surface:#FFFFFF; --line:#D7DDE0; --line-soft:#E7EBED;
+  --ocean:#0B6FA4; --ocean-soft:#9FC6DD; --reef:#0E9AA7;
+  --red:#C8472E; --red-soft:#E6B0A4; --amber:#D98A2B;
+  --settler:#AEB7BD; --migrator:#5193B4; --pioneer:#0B6FA4;
+  --good:#2E7D5B;
+  --r:6px; --maxw:1180px;
+  --shadow:0 1px 2px rgba(21,25,31,.06),0 8px 24px -16px rgba(21,25,31,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Inter",system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:"Space Grotesk",sans-serif;margin:0;font-weight:600;letter-spacing:-.01em}
+.mono{font-family:"IBM Plex Mono",monospace}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
+a{color:var(--ocean)}
+
+/* ---------- Top bar ---------- */
+.topbar{position:sticky;top:0;z-index:40;background:var(--ink);color:#fff;
+  border-bottom:1px solid #000}
+.topbar-inner{max-width:var(--maxw);margin:0 auto;padding:12px 22px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:12px;margin-right:auto}
+.brand .wave{font-family:"Space Grotesk";font-weight:700;font-size:18px;letter-spacing:-.02em}
+.brand .wave b{color:var(--ocean-soft)}
+.brand .sub{font-size:11px;color:#9aa6ae;letter-spacing:.14em;text-transform:uppercase}
+.tb-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#262d36;color:#e8edf0;border:1px solid #39424c;border-radius:var(--r);
+  padding:7px 12px;font-size:12.5px;font-weight:500;transition:.15s;white-space:nowrap}
+.btn:hover{background:#323b46;border-color:#4a5560}
+.btn.primary{background:var(--ocean);border-color:var(--ocean);color:#fff}
+.btn.primary:hover{background:#0a5f8c}
+.btn.ghost{background:transparent}
+.lang-toggle{display:flex;border:1px solid #39424c;border-radius:var(--r);overflow:hidden}
+.lang-toggle button{background:#262d36;color:#9aa6ae;border:0;padding:7px 11px;font-size:12px;font-weight:600}
+.lang-toggle button.on{background:var(--ocean);color:#fff}
+
+/* ---------- Layout ---------- */
+.shell{max-width:var(--maxw);margin:0 auto;padding:24px 22px 80px;
+  display:grid;grid-template-columns:228px 1fr;gap:28px;align-items:start}
+.rail{position:sticky;top:74px;display:flex;flex-direction:column;gap:2px}
+.rail .setup{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}
+.rail .setup label{display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 4px}
+.rail .setup input{width:100%;border:1px solid var(--line);border-radius:5px;padding:7px 8px;margin-bottom:10px}
+.rail .setup input:last-child{margin-bottom:0}
+.navitem{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:var(--r);
+  color:var(--muted);text-decoration:none;border:1px solid transparent;transition:.12s}
+.navitem:hover{background:var(--surface);border-color:var(--line)}
+.navitem.active{background:var(--surface);border-color:var(--line);color:var(--ink);box-shadow:var(--shadow)}
+.navitem .n{font-family:"IBM Plex Mono";font-size:11px;color:var(--ocean);font-weight:600;padding-top:1px}
+.navitem .lbl{font-size:12.5px;font-weight:500;line-height:1.35}
+
+/* ---------- Sections ---------- */
+.col{display:flex;flex-direction:column;gap:26px;min-width:0}
+section.tool{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:26px 28px;box-shadow:var(--shadow);scroll-margin-top:80px}
+.sec-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+.sec-head .step{font-family:"IBM Plex Mono";font-size:12px;font-weight:600;color:#fff;
+  background:var(--ink);border-radius:5px;padding:4px 8px;letter-spacing:.04em;margin-top:2px}
+.sec-head h2{font-size:20px}
+.sec-head .desc{color:var(--muted);font-size:12.5px;margin-top:3px;max-width:64ch}
+.sec-body{margin-top:18px}
+.hint{font-size:12px;color:var(--faint);margin:0 0 12px;border-left:2px solid var(--ocean-soft);padding-left:10px}
+
+/* ---------- Tables ---------- */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:middle}
+.tbl th{background:#f3f6f5;font-family:"Space Grotesk";font-weight:600;font-size:11.5px;
+  letter-spacing:.02em;color:var(--muted)}
+.tbl td.num{text-align:center}
+.tbl input,.tbl select,.tbl textarea{width:100%;border:1px solid transparent;background:transparent;
+  border-radius:4px;padding:4px 5px}
+.tbl input:focus,.tbl select:focus,.tbl textarea:focus{outline:none;border-color:var(--ocean);background:#fff}
+.tbl input.score{text-align:center;font-family:"IBM Plex Mono";max-width:64px}
+.tbl .swatch{width:11px;height:11px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:6px}
+.cell-x{color:var(--faint);background:none;border:0;font-size:14px;line-height:1;padding:2px 4px}
+.cell-x:hover{color:var(--red)}
+.addrow{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.addrow button{background:#eef3f5;border:1px dashed var(--ocean-soft);color:var(--ocean);
+  border-radius:var(--r);padding:7px 12px;font-size:12.5px;font-weight:600}
+.addrow button:hover{background:#e2eef3}
+
+.chart-wrap{margin-top:18px;background:#fbfcfc;border:1px solid var(--line);border-radius:8px;padding:14px}
+.chart-box{position:relative;height:340px}
+.chart-box.tall{height:420px}
+
+/* ERRC grid */
+.errc{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.errc .q{border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-height:90px}
+.errc .q h4{font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.errc .q .tag{width:9px;height:9px;border-radius:2px;display:inline-block}
+.errc .q.eliminate{background:#fbf1ee}.errc .eliminate .tag{background:var(--red)}
+.errc .q.reduce{background:#fdf6ec}.errc .reduce .tag{background:var(--amber)}
+.errc .q.raise{background:#eef6f5}.errc .raise .tag{background:var(--reef)}
+.errc .q.create{background:#eaf3f9}.errc .create .tag{background:var(--ocean)}
+.errc .chip{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:20px;
+  padding:3px 10px;font-size:12px;margin:0 6px 6px 0}
+.errc .empty{color:var(--faint);font-size:12px;font-style:italic}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 4px}
+.kpi{background:#f6f9f8;border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.kpi .v{font-family:"IBM Plex Mono";font-size:24px;font-weight:600;color:var(--ocean)}
+.kpi .l{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+
+/* toggle */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:6px}
+.seg button{background:#fff;border:0;padding:8px 14px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--ocean);color:#fff}
+
+/* Hoshin */
+.hoshin{display:grid;grid-template-columns:1fr 1.1fr 1fr;grid-template-rows:auto auto auto;
+  gap:6px;margin-top:16px;font-size:12px}
+.hcell{border:1px solid var(--line);border-radius:6px;padding:10px;background:#fbfcfc}
+.hcell h4{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.hcell.center{background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center}
+.hcell.center .d{font-family:"Space Grotesk";font-weight:700;font-size:15px}
+.hlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.hlist li{display:flex;gap:6px;align-items:center}
+.hlist input{flex:1;border:1px solid var(--line);border-radius:4px;padding:4px 6px;background:#fff}
+.hadd{background:none;border:1px dashed var(--ocean-soft);color:var(--ocean);border-radius:4px;
+  font-size:11px;padding:4px 8px;margin-top:6px;font-weight:600}
+.corr{border-collapse:collapse;width:100%}
+.corr td{border:1px solid var(--line);width:18px;height:18px;text-align:center;cursor:pointer;
+  font-size:11px;color:var(--ocean);background:#fff}
+.corr td:hover{background:#eef6f5}
+.corr .rh{font-size:9px;color:var(--faint);text-align:left;padding:0 3px;cursor:default;background:#f6f9f8}
+
+/* snapshots */
+.snap-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.snap-actions input{border:1px solid var(--line);border-radius:5px;padding:7px 8px}
+.dash{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:6px}
+.empty-state{color:var(--faint);font-size:13px;text-align:center;padding:34px;border:1px dashed var(--line);border-radius:8px}
+
+.footnote{font-size:11px;color:var(--faint);margin-top:14px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:3px;border-radius:2px;display:inline-block}
+.legend i.dot{width:10px;height:10px;border-radius:50%}
+
+@media (max-width:880px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:static}
+  .errc,.kpis,.dash{grid-template-columns:1fr}
+}
+
+/* ---------- Print ---------- */
+@media print{
+  @page{margin:14mm}
+  .topbar,.rail{display:none!important}
+  body{background:#fff}
+  .shell{display:block;max-width:none;padding:0}
+  .col{gap:0}
+  section.tool{break-inside:avoid;page-break-inside:avoid;box-shadow:none;border:0;
+    border-top:2px solid var(--ink);border-radius:0;padding:0 0 22px;margin-bottom:22px}
+  .addrow,.cell-x,.hadd{display:none!important}
+  .chart-box{height:300px}
+  .print-head{display:block!important}
+}
+.print-head{display:none;margin-bottom:18px}
+.print-head h1{font-size:22px}
+.print-head .pm{color:var(--muted);font-size:12px;margin-top:4px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="wave">Blue<b>Ocean</b> Workbench</div>
+      <div class="sub" data-i18n="tagline">Value-innovation toolkit</div>
+    </div>
+    <div class="tb-actions">
+      <button class="btn" id="btnExample" data-i18n="loadExample">Load example</button>
+      <button class="btn ghost" id="btnNew" data-i18n="newProject">New / clear</button>
+      <button class="btn ghost" id="btnExport" data-i18n="exportJson">Export JSON</button>
+      <button class="btn ghost" id="btnImport" data-i18n="importJson">Import JSON</button>
+      <input type="file" id="fileInput" accept="application/json" style="display:none">
+      <button class="btn primary" id="btnPdf" data-i18n="savePdf">Save as PDF</button>
+      <div class="lang-toggle">
+        <button id="langEN" class="on">EN</button>
+        <button id="langUA">UA</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <aside class="rail">
+    <div class="setup">
+      <label data-i18n="companyName">Company</label>
+      <input id="metaCompany" placeholder="Your company">
+      <label data-i18n="marketName">Market</label>
+      <input id="metaMarket" placeholder="Market / industry">
+    </div>
+    <a class="navitem" href="#tool1"><span class="n">01</span><span class="lbl" data-i18n="nav1">Value proposition — as-is</span></a>
+    <a class="navitem" href="#tool2"><span class="n">02</span><span class="lbl" data-i18n="nav2">To-be & barriers</span></a>
+    <a class="navitem" href="#tool3"><span class="n">03</span><span class="lbl" data-i18n="nav3">Portfolio map — current</span></a>
+    <a class="navitem" href="#tool4"><span class="n">04</span><span class="lbl" data-i18n="nav4">Portfolio map — future</span></a>
+    <a class="navitem" href="#tool5"><span class="n">05</span><span class="lbl" data-i18n="nav5">Value deployment</span></a>
+    <a class="navitem" href="#tool6"><span class="n">06</span><span class="lbl" data-i18n="nav6">Measurement</span></a>
+  </aside>
+
+  <main class="col">
+    <div class="print-head">
+      <h1 id="printTitle">Blue Ocean Strategy Workbench</h1>
+      <div class="pm" id="printMeta"></div>
+    </div>
+
+    <!-- 01 -->
+    <section class="tool" id="tool1">
+      <div class="sec-head">
+        <div class="step">01</div>
+        <div><h2 data-i18n="t1title">Existing value proposition vs peers</h2>
+        <div class="desc" data-i18n="t1desc">Score every competing factor 0–10 for your company and each peer. The strategy canvas draws the value curves; classify each factor in the ERRC grid below.</div></div>
+      </div>
+      <div class="sec-body">
+        <p class="hint" data-i18n="t1hint">Rows = competing factors of the market. Columns = players. Your company curve is drawn in ocean blue; peers in red-ocean tones.</p>
+        <div style="overflow-x:auto"><table class="tbl" id="canvasTable"></table></div>
+        <div class="addrow">
+          <button id="addFactor" data-i18n="addFactor">+ Add factor</button>
+          <button id="addPlayer" data-i18n="addPlayer">+ Add player</button>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-box tall"><canvas id="chartCanvas"></canvas></div>
+          <div class="legend" id="canvasLegend"></div>
+        </div>
+        <h3 style="margin:24px 0 0;font-size:15px" data-i18n="errcTitle">ERRC grid</h3>
+        <p class="hint" data-i18n="errcHint">Assign each factor: Eliminate, Reduce, Raise or Create. This drives the to-be move and the barriers register in step 02.</p>
+        <div class="errc" id="errcGrid"></div>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section class="tool" id="tool2">
+      <div class="sec-head">
+        <div class="step">02</div>
+        <div><h2 data-i18n="t2title">To-be value proposition & barriers to imitation</h2>
+        <div class="desc" data-i18n="t2desc">Set the target (to-be) level for each factor. For every Raise and Create factor, register the barriers that protect your lead and rate each barrier's strength.</div></div>
+      </div>
+      <div class="sec-body">
+        <p class="hint" data-i18n="t2hint">The dashed line is your to-be curve; the solid line your current curve; the muted line is the peer average.</p>
+        <div style="overflow-x:auto"><table class="tbl" id="tobeTable"></table></div>
+        <div class="chart-wrap">
+          <div class="chart-box tall"><canvas id="chartTobe"></canvas></div>
+          <div class="legend" id="tobeLegend"></div>
+        </div>
+        <h3 style="margin:24px 0 0;font-size:15px" data-i18n="barrierTitle">Barriers-to-imitation register</h3>
+        <p class="hint" data-i18n="barrierHint">Only Raise / Create factors appear here — these are the lead positions worth defending. Add the moats that make imitation hard and rate strength 1–5.</p>
+        <div id="barrierBlocks"></div>
+        <div class="kpis" style="margin-top:18px">
+          <div class="kpi"><div class="v" id="kpiBarrierIdx">–</div><div class="l" data-i18n="kpiBarrierIdx">Barrier strength index</div></div>
+          <div class="kpi"><div class="v" id="kpiRaiseCreate">–</div><div class="l" data-i18n="kpiRaiseCreate">Raise+Create factors</div></div>
+          <div class="kpi"><div class="v" id="kpiUplift">–</div><div class="l" data-i18n="kpiUplift">Avg to-be uplift</div></div>
+          <div class="kpi"><div class="v" id="kpiCovered">–</div><div class="l" data-i18n="kpiCovered">Factors with a moat</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="tool" id="tool3">
+      <div class="sec-head">
+        <div class="step">03</div>
+        <div><h2 data-i18n="t3title">Portfolio map — current (incl. peers)</h2>
+        <div class="desc" data-i18n="t3desc">Pioneer–Migrator–Settler map of every product in the market. X = value-innovation level, Y = market/revenue share, bubble size = revenue.</div></div>
+      </div>
+      <div class="sec-body">
+        <p class="hint" data-i18n="t3hint">Settlers (0–33) are me-too offerings; Migrators (34–66) offer more for less; Pioneers (67–100) are value-innovation moves. Your products are outlined; peers are filled.</p>
+        <div style="overflow-x:auto"><table class="tbl" id="productTable"></table></div>
+        <div class="addrow"><button id="addProduct" data-i18n="addProduct">+ Add product</button></div>
+        <div class="chart-wrap">
+          <div class="chart-box tall"><canvas id="chartPmsNow"></canvas></div>
+          <div class="legend" id="pmsLegend"></div>
+        </div>
+        <div class="kpis" style="margin-top:18px">
+          <div class="kpi"><div class="v" id="kpiPioneer">–</div><div class="l" data-i18n="kpiPioneerShare">Your pioneer share of revenue</div></div>
+          <div class="kpi"><div class="v" id="kpiSettler">–</div><div class="l" data-i18n="kpiSettlerShare">Your settler share of revenue</div></div>
+          <div class="kpi"><div class="v" id="kpiAvgSmp">–</div><div class="l" data-i18n="kpiAvgSmp">Your avg innovation level</div></div>
+          <div class="kpi"><div class="v" id="kpiProducts">–</div><div class="l" data-i18n="kpiProductsCount">Products mapped</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section class="tool" id="tool4">
+      <div class="sec-head">
+        <div class="step">04</div>
+        <div><h2 data-i18n="t4title">Portfolio map — future (company only)</h2>
+        <div class="desc" data-i18n="t4desc">Set the target position for each of your products. Arrows show the intended migration from today toward the pioneer zone.</div></div>
+      </div>
+      <div class="sec-body">
+        <p class="hint" data-i18n="t4hint">Hollow bubbles = today, solid bubbles = target. The arrow is the migration you commit to. Edit target level, share and revenue per product.</p>
+        <div style="overflow-x:auto"><table class="tbl" id="futureTable"></table></div>
+        <div class="chart-wrap">
+          <div class="chart-box tall"><canvas id="chartPmsFut"></canvas></div>
+          <div class="legend" id="futLegend"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section class="tool" id="tool5">
+      <div class="sec-head">
+        <div class="step">05</div>
+        <div><h2 data-i18n="t5title">Value deployment — focus the organisation</h2>
+        <div class="desc" data-i18n="t5desc">Tie each Raise/Create value factor to the parts of the company that must deliver it. Choose a simple deployment matrix or a full Hoshin Kanri X-matrix.</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="seg" id="deploySeg">
+          <button data-mode="matrix" class="on" data-i18n="modeMatrix">Value-deployment matrix</button>
+          <button data-mode="hoshin" data-i18n="modeHoshin">Hoshin X-matrix</button>
+        </div>
+        <div id="deployMatrix">
+          <p class="hint" data-i18n="t5mhint">Rows = organisational units, columns = Raise/Create value factors. In each cell name the owner, the objective and the KPI. Empty cells mean an undefended value factor.</p>
+          <div style="overflow-x:auto"><table class="tbl" id="deployTable"></table></div>
+          <div class="addrow"><button id="addUnit" data-i18n="addUnit">+ Add unit</button></div>
+          <div class="kpis" style="margin-top:18px">
+            <div class="kpi"><div class="v" id="kpiDeploy">–</div><div class="l" data-i18n="kpiDeployCompletion">Deployment completion</div></div>
+            <div class="kpi"><div class="v" id="kpiUnits">–</div><div class="l" data-i18n="kpiUnitsCount">Units engaged</div></div>
+            <div class="kpi"><div class="v" id="kpiUncovered">–</div><div class="l" data-i18n="kpiUncovered">Factors with no owner</div></div>
+            <div class="kpi"><div class="v" id="kpiCells">–</div><div class="l" data-i18n="kpiCellsFilled">Cells defined</div></div>
+          </div>
+        </div>
+        <div id="deployHoshin" style="display:none">
+          <p class="hint" data-i18n="t5hhint">Strategic objectives (S) link to initiatives (W), initiatives to KPIs/targets (N) and to owners (E). Click a corner cell to cycle the correlation: blank → ○ weak → ● strong.</p>
+          <div class="hoshin" id="hoshinGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section class="tool" id="tool6">
+      <div class="sec-head">
+        <div class="step">06</div>
+        <div><h2 data-i18n="t6title">Measurement — track the move over time</h2>
+        <div class="desc" data-i18n="t6desc">Take a dated snapshot of the whole workbench. The dashboard shows how your value lead, portfolio migration, barriers and deployment evolve.</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="snap-actions">
+          <input id="snapLabel" placeholder="Snapshot label (e.g. Q2 baseline)">
+          <button class="btn primary" id="btnSnap" data-i18n="takeSnapshot">Take snapshot</button>
+          <span class="footnote" id="snapCount"></span>
+        </div>
+        <div id="snapList"></div>
+        <div class="dash" id="dashCharts" style="display:none">
+          <div class="chart-wrap"><h4 style="font-size:12px;color:var(--muted)" data-i18n="dashValue">Value lead — your avg factor score</h4><div class="chart-box"><canvas id="chartTrendScore"></canvas></div></div>
+          <div class="chart-wrap"><h4 style="font-size:12px;color:var(--muted)" data-i18n="dashBarrier">Barrier strength index</h4><div class="chart-box"><canvas id="chartTrendBarrier"></canvas></div></div>
+          <div class="chart-wrap"><h4 style="font-size:12px;color:var(--muted)" data-i18n="dashPms">Portfolio mix — your revenue by zone</h4><div class="chart-box"><canvas id="chartTrendPms"></canvas></div></div>
+          <div class="chart-wrap"><h4 style="font-size:12px;color:var(--muted)" data-i18n="dashDeploy">Deployment completion %</h4><div class="chart-box"><canvas id="chartTrendDeploy"></canvas></div></div>
+        </div>
+        <div class="empty-state" id="dashEmpty" data-i18n="dashEmpty">No snapshots yet. Take your first snapshot to start tracking movement.</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* ============================ i18n ============================ */
+const I18N={
+  en:{
+    tagline:"Value-innovation toolkit",loadExample:"Load example",newProject:"New / clear",
+    exportJson:"Export JSON",importJson:"Import JSON",savePdf:"Save as PDF",
+    companyName:"Company",marketName:"Market",
+    nav1:"Value proposition — as-is",nav2:"To-be & barriers",nav3:"Portfolio map — current",
+    nav4:"Portfolio map — future",nav5:"Value deployment",nav6:"Measurement",
+    t1title:"Existing value proposition vs peers",
+    t1desc:"Score every competing factor 0–10 for your company and each peer. The strategy canvas draws the value curves; classify each factor in the ERRC grid below.",
+    t1hint:"Rows = competing factors of the market. Columns = players. Your company curve is drawn in ocean blue; peers in red-ocean tones.",
+    addFactor:"+ Add factor",addPlayer:"+ Add player",
+    errcTitle:"ERRC grid",errcHint:"Assign each factor: Eliminate, Reduce, Raise or Create. This drives the to-be move and the barriers register in step 02.",
+    eliminate:"Eliminate",reduce:"Reduce",raise:"Raise",create:"Create",none:"— unassigned —",
+    factor:"Factor",classification:"ERRC",
+    t2title:"To-be value proposition & barriers to imitation",
+    t2desc:"Set the target (to-be) level for each factor. For every Raise and Create factor, register the barriers that protect your lead and rate each barrier's strength.",
+    t2hint:"The dashed line is your to-be curve; the solid line your current curve; the muted line is the peer average.",
+    colNow:"Now",colTobe:"To-be",
+    barrierTitle:"Barriers-to-imitation register",
+    barrierHint:"Only Raise / Create factors appear here — these are the lead positions worth defending. Add the moats that make imitation hard and rate strength 1–5.",
+    addBarrier:"+ Add barrier",moatType:"Moat type",strength:"Strength 1–5",note:"How it protects the lead",
+    kpiBarrierIdx:"Barrier strength index",kpiRaiseCreate:"Raise+Create factors",kpiUplift:"Avg to-be uplift",kpiCovered:"Factors with a moat",
+    t3title:"Portfolio map — current (incl. peers)",
+    t3desc:"Pioneer–Migrator–Settler map of every product in the market. X = value-innovation level, Y = market/revenue share, bubble size = revenue.",
+    t3hint:"Settlers (0–33) are me-too offerings; Migrators (34–66) offer more for less; Pioneers (67–100) are value-innovation moves. Your products are outlined; peers are filled.",
+    addProduct:"+ Add product",
+    colProduct:"Product",colOwner:"Company",colSmp:"Level 0–100",colShare:"Share %",colRev:"Revenue",
+    kpiPioneerShare:"Your pioneer share of revenue",kpiSettlerShare:"Your settler share of revenue",
+    kpiAvgSmp:"Your avg innovation level",kpiProductsCount:"Products mapped",
+    t4title:"Portfolio map — future (company only)",
+    t4desc:"Set the target position for each of your products. Arrows show the intended migration from today toward the pioneer zone.",
+    t4hint:"Hollow bubbles = today, solid bubbles = target. The arrow is the migration you commit to. Edit target level, share and revenue per product.",
+    colTgtSmp:"Target level",colTgtShare:"Target share %",colTgtRev:"Target revenue",
+    t5title:"Value deployment — focus the organisation",
+    t5desc:"Tie each Raise/Create value factor to the parts of the company that must deliver it. Choose a simple deployment matrix or a full Hoshin Kanri X-matrix.",
+    modeMatrix:"Value-deployment matrix",modeHoshin:"Hoshin X-matrix",
+    t5mhint:"Rows = organisational units, columns = Raise/Create value factors. In each cell name the owner, the objective and the KPI. Empty cells mean an undefended value factor.",
+    addUnit:"+ Add unit",colUnit:"Unit",cellOwner:"owner",cellObj:"objective",cellKpi:"KPI",
+    kpiDeployCompletion:"Deployment completion",kpiUnitsCount:"Units engaged",kpiUncovered:"Factors with no owner",kpiCellsFilled:"Cells defined",
+    t5hhint:"Strategic objectives (S) link to initiatives (W), initiatives to KPIs/targets (N) and to owners (E). Click a corner cell to cycle the correlation: blank → ○ weak → ● strong.",
+    hObjectives:"Strategic objectives",hInitiatives:"Initiatives",hKpis:"KPIs / targets",hOwners:"Owners / teams",hAdd:"+ add",
+    t6title:"Measurement — track the move over time",
+    t6desc:"Take a dated snapshot of the whole workbench. The dashboard shows how your value lead, portfolio migration, barriers and deployment evolve.",
+    takeSnapshot:"Take snapshot",
+    dashValue:"Value lead — your avg factor score",dashBarrier:"Barrier strength index",
+    dashPms:"Portfolio mix — your revenue by zone",dashDeploy:"Deployment completion %",
+    dashEmpty:"No snapshots yet. Take your first snapshot to start tracking movement.",
+    settler:"Settler",migrator:"Migrator",pioneer:"Pioneer",
+    peerAvg:"Peer average",yourNow:"Your curve (now)",yourTobe:"Your curve (to-be)",
+    today:"Today",target:"Target",confirmNew:"Clear everything and start a blank project?",
+    snapTaken:"snapshot(s) saved",del:"delete"
+  },
+  ua:{
+    tagline:"Інструментарій ціннісних інновацій",loadExample:"Приклад",newProject:"Новий / очистити",
+    exportJson:"Експорт JSON",importJson:"Імпорт JSON",savePdf:"Зберегти у PDF",
+    companyName:"Компанія",marketName:"Ринок",
+    nav1:"Ціннісна пропозиція — поточна",nav2:"Цільова та бар'єри",nav3:"Карта портфеля — поточна",
+    nav4:"Карта портфеля — майбутня",nav5:"Розгортання цінності",nav6:"Вимірювання",
+    t1title:"Поточна ціннісна пропозиція проти конкурентів",
+    t1desc:"Оцініть кожен фактор конкуренції 0–10 для вашої компанії та кожного конкурента. Стратегічне полотно будує криві цінності; класифікуйте кожен фактор у сітці ERRC нижче.",
+    t1hint:"Рядки — фактори конкуренції ринку. Колонки — гравці. Крива вашої компанії — синім кольором океану; конкуренти — відтінками червоного океану.",
+    addFactor:"+ Додати фактор",addPlayer:"+ Додати гравця",
+    errcTitle:"Сітка ERRC",errcHint:"Призначте кожен фактор: Усунути, Зменшити, Підвищити або Створити. Це формує цільовий рух і реєстр бар'єрів у кроці 02.",
+    eliminate:"Усунути",reduce:"Зменшити",raise:"Підвищити",create:"Створити",none:"— не призначено —",
+    factor:"Фактор",classification:"ERRC",
+    t2title:"Цільова ціннісна пропозиція та бар'єри для копіювання",
+    t2desc:"Встановіть цільовий рівень для кожного фактора. Для кожного фактора Підвищити та Створити зареєструйте бар'єри, що захищають лідерство, та оцініть їхню силу.",
+    t2hint:"Пунктир — ваша цільова крива; суцільна — поточна крива; приглушена — середнє по конкурентах.",
+    colNow:"Зараз",colTobe:"Ціль",
+    barrierTitle:"Реєстр бар'єрів для копіювання",
+    barrierHint:"Тут лише фактори Підвищити / Створити — це лідерські позиції, варті захисту. Додайте «рови», що ускладнюють копіювання, та оцініть силу 1–5.",
+    addBarrier:"+ Додати бар'єр",moatType:"Тип бар'єру",strength:"Сила 1–5",note:"Як захищає лідерство",
+    kpiBarrierIdx:"Індекс сили бар'єрів",kpiRaiseCreate:"Фактори Підвищити+Створити",kpiUplift:"Сер. приріст до цілі",kpiCovered:"Фактори з бар'єром",
+    t3title:"Карта портфеля — поточна (з конкурентами)",
+    t3desc:"Карта Піонер–Мігрант–Поселенець для кожного продукту ринку. X = рівень ціннісної інновації, Y = частка ринку/доходу, розмір кулі = дохід.",
+    t3hint:"Поселенці (0–33) — продукти-наслідувачі; Мігранти (34–66) — більше за менше; Піонери (67–100) — ціннісні інновації. Ваші продукти — з обведенням; конкуренти — залиті.",
+    addProduct:"+ Додати продукт",
+    colProduct:"Продукт",colOwner:"Компанія",colSmp:"Рівень 0–100",colShare:"Частка %",colRev:"Дохід",
+    kpiPioneerShare:"Частка доходу від піонерів",kpiSettlerShare:"Частка доходу від поселенців",
+    kpiAvgSmp:"Сер. рівень інновації",kpiProductsCount:"Нанесено продуктів",
+    t4title:"Карта портфеля — майбутня (лише компанія)",
+    t4desc:"Встановіть цільову позицію для кожного продукту. Стрілки показують заплановану міграцію від сьогодні до зони піонерів.",
+    t4hint:"Порожні кулі — сьогодні, залиті — ціль. Стрілка — міграція, яку ви обираєте. Редагуйте цільовий рівень, частку та дохід для кожного продукту.",
+    colTgtSmp:"Цільовий рівень",colTgtShare:"Цільова частка %",colTgtRev:"Цільовий дохід",
+    t5title:"Розгортання цінності — фокус організації",
+    t5desc:"Прив'яжіть кожен фактор Підвищити/Створити до підрозділів, які мають його забезпечити. Оберіть просту матрицю розгортання або повну X-матрицю Хосін Канрі.",
+    modeMatrix:"Матриця розгортання цінності",modeHoshin:"X-матриця Хосін",
+    t5mhint:"Рядки — підрозділи, колонки — фактори Підвищити/Створити. У кожній клітинці вкажіть відповідального, ціль та KPI. Порожні клітинки = незахищений фактор.",
+    addUnit:"+ Додати підрозділ",colUnit:"Підрозділ",cellOwner:"відповідальний",cellObj:"ціль",cellKpi:"KPI",
+    kpiDeployCompletion:"Завершеність розгортання",kpiUnitsCount:"Залучені підрозділи",kpiUncovered:"Фактори без власника",kpiCellsFilled:"Визначені клітинки",
+    t5hhint:"Стратегічні цілі (S) пов'язані з ініціативами (W), ініціативи — з KPI/цілями (N) та власниками (E). Клік по кутовій клітинці змінює зв'язок: пусто → ○ слабкий → ● сильний.",
+    hObjectives:"Стратегічні цілі",hInitiatives:"Ініціативи",hKpis:"KPI / цілі",hOwners:"Власники / команди",hAdd:"+ дод.",
+    t6title:"Вимірювання — відстеження руху в часі",
+    t6desc:"Зробіть датований знімок усієї майстерні. Панель показує, як змінюються ваше лідерство в цінності, міграція портфеля, бар'єри та розгортання.",
+    takeSnapshot:"Зробити знімок",
+    dashValue:"Лідерство в цінності — сер. бал факторів",dashBarrier:"Індекс сили бар'єрів",
+    dashPms:"Структура портфеля — ваш дохід за зонами",dashDeploy:"Завершеність розгортання %",
+    dashEmpty:"Знімків ще немає. Зробіть перший знімок, щоб почати відстеження.",
+    settler:"Поселенець",migrator:"Мігрант",pioneer:"Піонер",
+    peerAvg:"Сер. по конкурентах",yourNow:"Ваша крива (зараз)",yourTobe:"Ваша крива (ціль)",
+    today:"Сьогодні",target:"Ціль",confirmNew:"Очистити все та почати з чистого проєкту?",
+    snapTaken:"знімків збережено",del:"видалити"
+  }
+};
+let LANG="en";
+const t=k=>(I18N[LANG][k]!==undefined?I18N[LANG][k]:(I18N.en[k]||k));
+const MOAT_KEYS=["ip","scale","network","switching","brand","regulatory","monopoly","cultural","data"];
+const MOAT_LABELS={
+  en:{ip:"Patents / IP",scale:"Scale cost advantage",network:"Network effects",switching:"Switching costs",
+    brand:"Brand / image",regulatory:"Regulatory / licence",monopoly:"Market too small for two",
+    cultural:"Cultural / organisational",data:"Data / algorithmic"},
+  ua:{ip:"Патенти / ІВ",scale:"Перевага масштабу у витратах",network:"Мережеві ефекти",switching:"Витрати на перехід",
+    brand:"Бренд / імідж",regulatory:"Регуляторні / ліцензія",monopoly:"Ринок замалий для двох",
+    cultural:"Культурні / організаційні",data:"Дані / алгоритми"}
+};
+
+/* ============================ State ============================ */
+const KEY="boswb_v1";
+let S=blank();
+let charts={};
+function uid(p){return p+Math.random().toString(36).slice(2,8)}
+function blank(){
+  return {meta:{company:"",market:"",lang:"en"},
+    factors:[],players:[],scores:{},tobe:{},errc:{},barriers:{},
+    products:[],units:[],deploy:{},deployMode:"matrix",
+    hoshin:{objectives:[],initiatives:[],kpis:[],owners:[],
+      cOI:{},cIK:{},cIO:{},cKO:{}},
+    snapshots:[]};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){S=Object.assign(blank(),JSON.parse(r));return true}}catch(e){}return false}
+
+const PEER_COLORS=["#C8472E","#D98A2B","#9A6B3F","#8C5A8C","#6E7C46"];
+function companyPlayer(){return S.players.find(p=>p.isCompany)}
+function peerPlayers(){return S.players.filter(p=>!p.isCompany)}
+
+/* ============================ Render: setup + i18n ============================ */
+function applyI18n(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.getAttribute("data-i18n"))});
+  document.documentElement.lang=LANG;
+  document.getElementById("metaCompany").placeholder=t("companyName");
+  document.getElementById("metaMarket").placeholder=t("marketName");
+  document.getElementById("printTitle").textContent="Blue Ocean Strategy Workbench";
+  const pm=[]; if(S.meta.company)pm.push(S.meta.company); if(S.meta.market)pm.push(S.meta.market);
+  pm.push(new Date().toLocaleDateString());
+  document.getElementById("printMeta").textContent=pm.join("  ·  ");
+}
+
+/* ============================ Tool 1: Canvas table + ERRC ============================ */
+function renderCanvasTable(){
+  const tb=document.getElementById("canvasTable");
+  let h="<thead><tr><th style='min-width:150px'>"+t("factor")+"</th>";
+  S.players.forEach(p=>{h+="<th class='num'><span class='swatch' style='background:"+p.color+"'></span>"+esc(p.name)+
+    " <button class='cell-x' data-act='delPlayer' data-id='"+p.id+"'>×</button></th>"});
+  h+="<th class='num'>"+t("classification")+"</th></tr></thead><tbody>";
+  S.factors.forEach(f=>{
+    h+="<tr><td><input data-act='factorName' data-id='"+f.id+"' value='"+esc(f.name)+"'> ";
+    h+="<button class='cell-x' data-act='delFactor' data-id='"+f.id+"'>×</button></td>";
+    S.players.forEach(p=>{
+      const v=(S.scores[f.id]&&S.scores[f.id][p.id]!=null)?S.scores[f.id][p.id]:"";
+      h+="<td class='num'><input class='score' type='number' min='0' max='10' step='0.5' data-act='score' data-f='"+f.id+"' data-p='"+p.id+"' value='"+v+"'></td>";
+    });
+    const cls=S.errc[f.id]||"";
+    h+="<td><select data-act='errc' data-id='"+f.id+"'>"+
+      "<option value=''"+(cls===""?" selected":"")+">"+t("none")+"</option>"+
+      ["eliminate","reduce","raise","create"].map(c=>"<option value='"+c+"'"+(cls===c?" selected":"")+">"+t(c)+"</option>").join("")+
+      "</select></td></tr>";
+  });
+  h+="</tbody>";
+  tb.innerHTML=h;
+}
+function renderErrc(){
+  const g=document.getElementById("errcGrid");
+  const map={eliminate:[],reduce:[],raise:[],create:[]};
+  S.factors.forEach(f=>{const c=S.errc[f.id]; if(map[c])map[c].push(f.name)});
+  const block=(k)=>{
+    const chips=map[k].length?map[k].map(n=>"<span class='chip'>"+esc(n)+"</span>").join(""):"<span class='empty'>—</span>";
+    return "<div class='q "+k+"'><h4><span class='tag'></span>"+t(k)+"</h4>"+chips+"</div>";
+  };
+  g.innerHTML=block("eliminate")+block("reduce")+block("raise")+block("create");
+}
+
+/* ============================ Tool 2: To-be table + barriers ============================ */
+function renderTobeTable(){
+  const tb=document.getElementById("tobeTable");
+  const c=companyPlayer();
+  let h="<thead><tr><th style='min-width:150px'>"+t("factor")+"</th><th class='num'>ERRC</th><th class='num'>"+t("colNow")+"</th><th class='num'>"+t("colTobe")+"</th></tr></thead><tbody>";
+  S.factors.forEach(f=>{
+    const now=(c&&S.scores[f.id]&&S.scores[f.id][c.id]!=null)?S.scores[f.id][c.id]:"";
+    const tobe=S.tobe[f.id]!=null?S.tobe[f.id]:"";
+    const cls=S.errc[f.id]||"";
+    h+="<tr><td>"+esc(f.name)+"</td><td class='num'>"+(cls?t(cls):"—")+"</td>"+
+      "<td class='num mono'>"+(now===""?"–":now)+"</td>"+
+      "<td class='num'><input class='score' type='number' min='0' max='10' step='0.5' data-act='tobe' data-id='"+f.id+"' value='"+tobe+"'></td></tr>";
+  });
+  h+="</tbody>";
+  tb.innerHTML=h;
+}
+function renderBarriers(){
+  const wrap=document.getElementById("barrierBlocks");
+  const rc=S.factors.filter(f=>S.errc[f.id]==="raise"||S.errc[f.id]==="create");
+  if(!rc.length){wrap.innerHTML="<div class='empty-state'>"+(LANG==="ua"?"Призначте фактори Підвищити/Створити у кроці 01, щоб додати бар'єри.":"Assign Raise/Create factors in step 01 to register barriers here.")+"</div>";return}
+  let h="";
+  rc.forEach(f=>{
+    const cls=S.errc[f.id];
+    h+="<div style='border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:12px'>";
+    h+="<div style='display:flex;align-items:center;gap:8px;margin-bottom:8px'><span class='swatch' style='background:"+(cls==="create"?"var(--ocean)":"var(--reef)")+"'></span><b style='font-family:Space Grotesk'>"+esc(f.name)+"</b> <span style='font-size:11px;color:var(--muted)'>· "+t(cls)+"</span></div>";
+    h+="<table class='tbl'><thead><tr><th>"+t("moatType")+"</th><th style='width:120px'>"+t("strength")+"</th><th>"+t("note")+"</th><th style='width:30px'></th></tr></thead><tbody>";
+    const list=S.barriers[f.id]||[];
+    list.forEach((b,i)=>{
+      h+="<tr><td><select data-act='bType' data-f='"+f.id+"' data-i='"+i+"'>"+
+        MOAT_KEYS.map(m=>"<option value='"+m+"'"+(b.type===m?" selected":"")+">"+MOAT_LABELS[LANG][m]+"</option>").join("")+"</select></td>";
+      h+="<td class='num'><input class='score' type='number' min='1' max='5' step='1' data-act='bStr' data-f='"+f.id+"' data-i='"+i+"' value='"+(b.strength||"")+"'></td>";
+      h+="<td><input data-act='bNote' data-f='"+f.id+"' data-i='"+i+"' value='"+esc(b.note||"")+"'></td>";
+      h+="<td class='num'><button class='cell-x' data-act='bDel' data-f='"+f.id+"' data-i='"+i+"'>×</button></td></tr>";
+    });
+    h+="</tbody></table><div class='addrow'><button data-act='bAdd' data-f='"+f.id+"'>"+t("addBarrier")+"</button></div></div>";
+  });
+  wrap.innerHTML=h;
+  // KPIs
+  let strs=[]; rc.forEach(f=>{(S.barriers[f.id]||[]).forEach(b=>{if(b.strength)strs.push(+b.strength)})});
+  const idx=strs.length?(strs.reduce((a,b)=>a+b,0)/strs.length):0;
+  document.getElementById("kpiBarrierIdx").textContent=strs.length?idx.toFixed(1)+"/5":"–";
+  document.getElementById("kpiRaiseCreate").textContent=rc.length;
+  const c=companyPlayer();
+  let ups=[]; S.factors.forEach(f=>{const n=(c&&S.scores[f.id]&&S.scores[f.id][c.id]!=null)?+S.scores[f.id][c.id]:null;const tb=S.tobe[f.id]!=null?+S.tobe[f.id]:null;if(n!=null&&tb!=null)ups.push(tb-n)});
+  const up=ups.length?(ups.reduce((a,b)=>a+b,0)/ups.length):0;
+  document.getElementById("kpiUplift").textContent=ups.length?(up>=0?"+":"")+up.toFixed(1):"–";
+  const covered=rc.filter(f=>(S.barriers[f.id]||[]).length>0).length;
+  document.getElementById("kpiCovered").textContent=covered+"/"+rc.length;
+}
+
+/* ============================ Tool 3 & 4: products ============================ */
+function renderProductTable(){
+  const tb=document.getElementById("productTable");
+  const cName=S.meta.company||(companyPlayer()?companyPlayer().name:"");
+  let h="<thead><tr><th style='min-width:140px'>"+t("colProduct")+"</th><th>"+t("colOwner")+"</th><th class='num'>"+t("colSmp")+"</th><th class='num'>"+t("colShare")+"</th><th class='num'>"+t("colRev")+"</th><th style='width:30px'></th></tr></thead><tbody>";
+  S.products.forEach(p=>{
+    h+="<tr><td><input data-act='pName' data-id='"+p.id+"' value='"+esc(p.name)+"'></td>";
+    h+="<td><input data-act='pCo' data-id='"+p.id+"' value='"+esc(p.company)+"' list='coList'></td>";
+    h+="<td class='num'><input class='score' type='number' min='0' max='100' data-act='pSmp' data-id='"+p.id+"' value='"+(p.smpNow??"")+"'></td>";
+    h+="<td class='num'><input class='score' type='number' min='0' max='100' step='0.1' data-act='pShare' data-id='"+p.id+"' value='"+(p.shareNow??"")+"'></td>";
+    h+="<td class='num'><input class='score' type='number' min='0' step='1' data-act='pRev' data-id='"+p.id+"' value='"+(p.revNow??"")+"'></td>";
+    h+="<td class='num'><button class='cell-x' data-act='pDel' data-id='"+p.id+"'>×</button></td></tr>";
+  });
+  h+="</tbody>";
+  tb.innerHTML=h;
+  // company datalist
+  let dl=document.getElementById("coList");
+  if(!dl){dl=document.createElement("datalist");dl.id="coList";document.body.appendChild(dl)}
+  const cos=[...new Set(S.products.map(p=>p.company).filter(Boolean))];
+  if(cName&&!cos.includes(cName))cos.unshift(cName);
+  dl.innerHTML=cos.map(c=>"<option value='"+esc(c)+"'>").join("");
+}
+function renderFutureTable(){
+  const tb=document.getElementById("futureTable");
+  const cName=S.meta.company||(companyPlayer()?companyPlayer().name:"");
+  const mine=S.products.filter(p=>p.company&&cName&&p.company.toLowerCase()===cName.toLowerCase());
+  let h="<thead><tr><th style='min-width:140px'>"+t("colProduct")+"</th>"+
+    "<th class='num'>"+t("colSmp")+"</th><th class='num'>"+t("colTgtSmp")+"</th>"+
+    "<th class='num'>"+t("colShare")+"</th><th class='num'>"+t("colTgtShare")+"</th>"+
+    "<th class='num'>"+t("colRev")+"</th><th class='num'>"+t("colTgtRev")+"</th></tr></thead><tbody>";
+  if(!mine.length){h+="<tr><td colspan='7' style='color:var(--faint);text-align:center;padding:18px'>"+(LANG==="ua"?"Додайте продукти вашої компанії у кроці 03 (поле «Компанія» = «"+esc(cName||"…")+"»).":"Add products owned by your company in step 03 (set Company = \""+esc(cName||"…")+"\").")+"</td></tr>";}
+  mine.forEach(p=>{
+    h+="<tr><td>"+esc(p.name)+"</td>";
+    h+="<td class='num mono'>"+(p.smpNow??"–")+"</td>";
+    h+="<td class='num'><input class='score' type='number' min='0' max='100' data-act='pFsmp' data-id='"+p.id+"' value='"+(p.smpFut??"")+"'></td>";
+    h+="<td class='num mono'>"+(p.shareNow??"–")+"</td>";
+    h+="<td class='num'><input class='score' type='number' min='0' max='100' step='0.1' data-act='pFshare' data-id='"+p.id+"' value='"+(p.shareFut??"")+"'></td>";
+    h+="<td class='num mono'>"+(p.revNow??"–")+"</td>";
+    h+="<td class='num'><input class='score' type='number' min='0' data-act='pFrev' data-id='"+p.id+"' value='"+(p.revFut??"")+"'></td></tr>";
+  });
+  h+="</tbody>";
+  tb.innerHTML=h;
+  // product KPIs (tool3)
+  const mineRev=mine.reduce((a,p)=>a+(+p.revNow||0),0);
+  const pio=mine.filter(p=>(+p.smpNow||0)>=67).reduce((a,p)=>a+(+p.revNow||0),0);
+  const set=mine.filter(p=>(+p.smpNow||0)<=33).reduce((a,p)=>a+(+p.revNow||0),0);
+  const avg=mine.length?(mine.reduce((a,p)=>a+(+p.smpNow||0),0)/mine.length):0;
+  document.getElementById("kpiPioneer").textContent=mineRev?Math.round(pio/mineRev*100)+"%":"–";
+  document.getElementById("kpiSettler").textContent=mineRev?Math.round(set/mineRev*100)+"%":"–";
+  document.getElementById("kpiAvgSmp").textContent=mine.length?Math.round(avg):"–";
+  document.getElementById("kpiProducts").textContent=S.products.length;
+}
+
+/* ============================ Tool 5: deployment ============================ */
+function rcFactors(){return S.factors.filter(f=>S.errc[f.id]==="raise"||S.errc[f.id]==="create")}
+function renderDeploy(){
+  if(S.deployMode==="hoshin"){
+    document.getElementById("deployMatrix").style.display="none";
+    document.getElementById("deployHoshin").style.display="block";
+    renderHoshin();
+  }else{
+    document.getElementById("deployMatrix").style.display="block";
+    document.getElementById("deployHoshin").style.display="none";
+    renderDeployMatrix();
+  }
+  document.querySelectorAll("#deploySeg button").forEach(b=>b.classList.toggle("on",b.dataset.mode===S.deployMode));
+}
+function renderDeployMatrix(){
+  const tb=document.getElementById("deployTable");
+  const facs=rcFactors();
+  let h="<thead><tr><th style='min-width:120px'>"+t("colUnit")+"</th>";
+  facs.forEach(f=>{h+="<th>"+esc(f.name)+"</th>"});
+  if(!facs.length)h+="<th style='color:var(--faint)'>"+(LANG==="ua"?"(немає факторів Підвищити/Створити)":"(no Raise/Create factors yet)")+"</th>";
+  h+="<th style='width:30px'></th></tr></thead><tbody>";
+  S.units.forEach(u=>{
+    h+="<tr><td><input data-act='uName' data-id='"+u.id+"' value='"+esc(u.name)+"'></td>";
+    facs.forEach(f=>{
+      const cell=(S.deploy[u.id]&&S.deploy[u.id][f.id])||{};
+      h+="<td><input style='font-size:11.5px' data-act='dOwner' data-u='"+u.id+"' data-f='"+f.id+"' placeholder='"+t("cellOwner")+"' value='"+esc(cell.owner||"")+"'>"+
+        "<input style='font-size:11.5px;margin-top:3px' data-act='dObj' data-u='"+u.id+"' data-f='"+f.id+"' placeholder='"+t("cellObj")+"' value='"+esc(cell.obj||"")+"'>"+
+        "<input style='font-size:11.5px;margin-top:3px' data-act='dKpi' data-u='"+u.id+"' data-f='"+f.id+"' placeholder='"+t("cellKpi")+"' value='"+esc(cell.kpi||"")+"'></td>";
+    });
+    if(!facs.length)h+="<td></td>";
+    h+="<td class='num'><button class='cell-x' data-act='uDel' data-id='"+u.id+"'>×</button></td></tr>";
+  });
+  h+="</tbody>";
+  tb.innerHTML=h;
+  // KPIs
+  const total=S.units.length*facs.length;
+  let filled=0;
+  S.units.forEach(u=>facs.forEach(f=>{const c=(S.deploy[u.id]&&S.deploy[u.id][f.id])||{};if(c.owner||c.obj||c.kpi)filled++}));
+  document.getElementById("kpiDeploy").textContent=total?Math.round(filled/total*100)+"%":"–";
+  document.getElementById("kpiUnits").textContent=S.units.length;
+  const uncovered=facs.filter(f=>!S.units.some(u=>{const c=(S.deploy[u.id]&&S.deploy[u.id][f.id])||{};return c.owner||c.obj||c.kpi})).length;
+  document.getElementById("kpiUncovered").textContent=uncovered+"/"+facs.length;
+  document.getElementById("kpiCells").textContent=filled+"/"+(total||0);
+}
+function renderHoshin(){
+  const H=S.hoshin;
+  const list=(arr,key)=>{
+    let h="<ul class='hlist'>";
+    arr.forEach((v,i)=>{h+="<li><input data-act='hEdit' data-k='"+key+"' data-i='"+i+"' value='"+esc(v)+"'><button class='cell-x' data-act='hDel' data-k='"+key+"' data-i='"+i+"'>×</button></li>"});
+    h+="</ul><button class='hadd' data-act='hAdd' data-k='"+key+"'>"+t("hAdd")+"</button>";
+    return h;
+  };
+  const corr=(rows,cols,store,rk,ck)=>{
+    if(!rows.length||!cols.length)return "<div style='color:var(--faint);font-size:10px'>—</div>";
+    let h="<table class='corr'><tr><td class='rh'></td>";
+    cols.forEach((c,j)=>{h+="<td class='rh' title='"+esc(c)+"'>"+(j+1)+"</td>"});
+    h+="</tr>";
+    rows.forEach((r,i)=>{
+      h+="<tr><td class='rh' title='"+esc(r)+"'>"+(i+1)+"</td>";
+      cols.forEach((c,j)=>{const v=store[i+"_"+j]||0;const sym=v===2?"●":v===1?"○":"";
+        h+="<td data-act='hCorr' data-store='"+store._name+"' data-i='"+i+"' data-j='"+j+"'>"+sym+"</td>"});
+      h+="</tr>";
+    });
+    h+="</table>";return h;
+  };
+  H.cOI._name="cOI";H.cIK._name="cIK";H.cIO._name="cIO";H.cKO._name="cKO";
+  const g=document.getElementById("hoshinGrid");
+  g.innerHTML=
+    "<div class='hcell'><h4>"+t("hInitiatives")+" × "+t("hKpis")+"</h4>"+corr(H.initiatives,H.kpis,H.cIK)+"</div>"+
+    "<div class='hcell'><h4>"+t("hKpis")+" (N)</h4>"+list(H.kpis,"kpis")+"</div>"+
+    "<div class='hcell'><h4>"+t("hKpis")+" × "+t("hOwners")+"</h4>"+corr(H.kpis,H.owners,H.cKO)+"</div>"+
+    "<div class='hcell'><h4>"+t("hInitiatives")+" (W)</h4>"+list(H.initiatives,"initiatives")+"</div>"+
+    "<div class='hcell center'><div class='d'>HOSHIN<br>X-MATRIX</div></div>"+
+    "<div class='hcell'><h4>"+t("hOwners")+" (E)</h4>"+list(H.owners,"owners")+"</div>"+
+    "<div class='hcell'><h4>"+t("hObjectives")+" × "+t("hInitiatives")+"</h4>"+corr(H.objectives,H.initiatives,H.cOI)+"</div>"+
+    "<div class='hcell'><h4>"+t("hObjectives")+" (S)</h4>"+list(H.objectives,"objectives")+"</div>"+
+    "<div class='hcell'><h4>"+t("hInitiatives")+" × "+t("hObjectives")+"</h4>"+corr(H.initiatives,H.objectives,H.cIO)+"</div>";
+}
+
+/* ============================ Charts ============================ */
+const band={id:"band",beforeDraw(c){const{ctx,chartArea,scales}=c;if(!chartArea||!scales.x)return;
+  const zones=[[0,33,"rgba(174,183,189,.14)"],[33,67,"rgba(81,147,180,.12)"],[67,100,"rgba(11,111,164,.12)"]];
+  ctx.save();
+  zones.forEach(z=>{const x0=scales.x.getPixelForValue(z[0]),x1=scales.x.getPixelForValue(z[1]);
+    ctx.fillStyle=z[2];ctx.fillRect(x0,chartArea.top,x1-x0,chartArea.bottom-chartArea.top)});
+  ctx.fillStyle="#8A949C";ctx.font="600 11px 'IBM Plex Mono',monospace";ctx.textAlign="center";
+  const yy=chartArea.top+14;
+  ctx.fillText(t("settler").toUpperCase(),scales.x.getPixelForValue(16.5),yy);
+  ctx.fillText(t("migrator").toUpperCase(),scales.x.getPixelForValue(50),yy);
+  ctx.fillText(t("pioneer").toUpperCase(),scales.x.getPixelForValue(83.5),yy);
+  ctx.restore();}};
+const arrows={id:"arrows",afterDatasetsDraw(c){const pairs=c.config._arrowPairs;if(!pairs)return;
+  const{ctx,scales}=c;ctx.save();ctx.strokeStyle="#0B6FA4";ctx.fillStyle="#0B6FA4";ctx.lineWidth=1.6;
+  pairs.forEach(p=>{const x0=scales.x.getPixelForValue(p.x0),y0=scales.y.getPixelForValue(p.y0),
+    x1=scales.x.getPixelForValue(p.x1),y1=scales.y.getPixelForValue(p.y1);
+    const dx=x1-x0,dy=y1-y0,len=Math.hypot(dx,dy);if(len<2)return;
+    const ux=dx/len,uy=dy/len, bx=x1-ux*9, by=y1-uy*9;
+    ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(bx,by);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x1,y1);
+    ctx.lineTo(bx-uy*5,by+ux*5);ctx.lineTo(bx+uy*5,by-ux*5);ctx.closePath();ctx.fill();});
+  ctx.restore();}};
+
+function destroy(k){if(charts[k]){charts[k].destroy();delete charts[k]}}
+function lineDatasets(useTobe){
+  const ds=[];const labels=S.factors.map(f=>f.name);
+  const c=companyPlayer();
+  if(useTobe){
+    if(c){ds.push({label:t("yourNow"),data:S.factors.map(f=>(S.scores[f.id]&&S.scores[f.id][c.id]!=null)?+S.scores[f.id][c.id]:null),
+      borderColor:"#0B6FA4",backgroundColor:"#0B6FA4",borderWidth:2.5,tension:.25,pointRadius:3,spanGaps:true});}
+    ds.push({label:t("yourTobe"),data:S.factors.map(f=>S.tobe[f.id]!=null?+S.tobe[f.id]:null),
+      borderColor:"#0B6FA4",backgroundColor:"#0B6FA4",borderWidth:2.5,borderDash:[6,4],tension:.25,pointRadius:3,spanGaps:true});
+    const peers=peerPlayers();
+    if(peers.length){const avg=S.factors.map(f=>{const vs=peers.map(p=>(S.scores[f.id]&&S.scores[f.id][p.id]!=null)?+S.scores[f.id][p.id]:null).filter(v=>v!=null);return vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:null});
+      ds.push({label:t("peerAvg"),data:avg,borderColor:"#C8472E",backgroundColor:"#C8472E",borderWidth:1.5,tension:.25,pointRadius:2,spanGaps:true,borderDash:[2,2]});}
+  }else{
+    S.players.forEach(p=>{ds.push({label:p.name,data:S.factors.map(f=>(S.scores[f.id]&&S.scores[f.id][p.id]!=null)?+S.scores[f.id][p.id]:null),
+      borderColor:p.color,backgroundColor:p.color,borderWidth:p.isCompany?3:1.8,tension:.25,pointRadius:p.isCompany?4:3,spanGaps:true});});
+  }
+  return {labels,ds};
+}
+function renderCanvasChart(){
+  const {labels,ds}=lineDatasets(false);
+  destroy("canvas");
+  charts.canvas=new Chart(document.getElementById("chartCanvas"),{type:"line",
+    data:{labels,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{min:0,max:10,title:{display:true,text:LANG==="ua"?"Рівень пропозиції":"Offering level"}},
+        x:{ticks:{maxRotation:38,minRotation:0,autoSkip:false,font:{size:10}}}},
+      plugins:{legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}}}}});
+  legendInto("canvasLegend",S.players.map(p=>({c:p.color,l:p.name,line:true})));
+}
+function renderTobeChart(){
+  const {labels,ds}=lineDatasets(true);
+  destroy("tobe");
+  charts.tobe=new Chart(document.getElementById("chartTobe"),{type:"line",
+    data:{labels,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{min:0,max:10},x:{ticks:{maxRotation:38,autoSkip:false,font:{size:10}}}},
+      plugins:{legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}}}}});
+}
+function pmsBubbles(products,outlineMine){
+  const cName=(S.meta.company||"").toLowerCase();
+  const revs=products.map(p=>+p.revNow||0);const maxR=Math.max(1,...revs);
+  const byCo={};
+  products.forEach(p=>{const co=p.company||"—";(byCo[co]=byCo[co]||[]).push(p)});
+  let ci=0;const ds=[];
+  Object.keys(byCo).forEach(co=>{
+    const mine=cName&&co.toLowerCase()===cName;
+    const color=mine?"#0B6FA4":PEER_COLORS[ci++%PEER_COLORS.length];
+    ds.push({label:co,
+      data:byCo[co].map(p=>({x:+p.smpNow||0,y:+p.shareNow||0,r:6+Math.sqrt((+p.revNow||0)/maxR)*22,_n:p.name})),
+      backgroundColor:mine?"rgba(11,111,164,.18)":color+"cc",
+      borderColor:color,borderWidth:mine?2.5:1});
+  });
+  return ds;
+}
+function renderPmsNow(){
+  destroy("pmsNow");
+  const ds=pmsBubbles(S.products,true);
+  charts.pmsNow=new Chart(document.getElementById("chartPmsNow"),{type:"bubble",
+    data:{datasets:ds},plugins:[band],
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{min:0,max:100,title:{display:true,text:(LANG==="ua"?"Рівень ціннісної інновації":"Value-innovation level")+" →"}},
+        y:{min:0,max:100,title:{display:true,text:t("colShare")}}},
+      plugins:{legend:{position:"bottom",labels:{boxWidth:12,font:{size:11}}},
+        tooltip:{callbacks:{label:c=>c.raw._n+"  ("+c.raw.x+", "+c.raw.y+"%)"}}}}});
+}
+function renderPmsFut(){
+  destroy("pmsFut");
+  const cName=(S.meta.company||"").toLowerCase();
+  const mine=S.products.filter(p=>p.company&&p.company.toLowerCase()===cName);
+  const allRev=mine.flatMap(p=>[+p.revNow||0,+p.revFut||0]);const maxR=Math.max(1,...allRev);
+  const now=[],fut=[],pairs=[];
+  mine.forEach(p=>{
+    const nx=+p.smpNow||0,ny=+p.shareNow||0,fx=p.smpFut!=null?+p.smpFut:nx,fy=p.shareFut!=null?+p.shareFut:ny;
+    now.push({x:nx,y:ny,r:6+Math.sqrt((+p.revNow||0)/maxR)*22,_n:p.name+" ("+t("today")+")"});
+    fut.push({x:fx,y:fy,r:6+Math.sqrt((p.revFut!=null?+p.revFut:+p.revNow||0)/maxR)*22,_n:p.name+" ("+t("target")+")"});
+    pairs.push({x0:nx,y0:ny,x1:fx,y1:fy});
+  });
+  const cfg={type:"bubble",data:{datasets:[
+    {label:t("today"),data:now,backgroundColor:"rgba(11,111,164,0)",borderColor:"#9FC6DD",borderWidth:1.6},
+    {label:t("target"),data:fut,backgroundColor:"rgba(11,111,164,.55)",borderColor:"#0B6FA4",borderWidth:1.6}
+  ]},plugins:[band,arrows],
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{min:0,max:100,title:{display:true,text:(LANG==="ua"?"Рівень ціннісної інновації":"Value-innovation level")+" →"}},
+        y:{min:0,max:100,title:{display:true,text:t("colShare")}}},
+      plugins:{legend:{position:"bottom",labels:{boxWidth:12,font:{size:11}}},
+        tooltip:{callbacks:{label:c=>c.raw._n+"  ("+c.raw.x+", "+c.raw.y+"%)"}}}}};
+  cfg._arrowPairs=pairs;
+  charts.pmsFut=new Chart(document.getElementById("chartPmsFut"),cfg);
+}
+function legendInto(id,items){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=items.map(it=>"<span><i class='"+(it.line?"":"dot")+"' style='background:"+it.c+"'></i>"+esc(it.l)+"</span>").join("");
+}
+
+/* ============================ Tool 6: snapshots ============================ */
+function computeMetrics(){
+  const c=companyPlayer();
+  const sc=S.factors.map(f=>(c&&S.scores[f.id]&&S.scores[f.id][c.id]!=null)?+S.scores[f.id][c.id]:null).filter(v=>v!=null);
+  const avgScore=sc.length?sc.reduce((a,b)=>a+b,0)/sc.length:0;
+  const rc=rcFactors();let strs=[];rc.forEach(f=>(S.barriers[f.id]||[]).forEach(b=>{if(b.strength)strs.push(+b.strength)}));
+  const barrier=strs.length?strs.reduce((a,b)=>a+b,0)/strs.length:0;
+  const cName=(S.meta.company||"").toLowerCase();
+  const mine=S.products.filter(p=>p.company&&p.company.toLowerCase()===cName);
+  const rev={settler:0,migrator:0,pioneer:0};
+  mine.forEach(p=>{const s=+p.smpNow||0,r=+p.revNow||0;if(s<=33)rev.settler+=r;else if(s<=66)rev.migrator+=r;else rev.pioneer+=r});
+  const facs=rc;const total=S.units.length*facs.length;let filled=0;
+  S.units.forEach(u=>facs.forEach(f=>{const cc=(S.deploy[u.id]&&S.deploy[u.id][f.id])||{};if(cc.owner||cc.obj||cc.kpi)filled++}));
+  const deploy=total?filled/total*100:0;
+  return {avgScore,barrier,rev,deploy};
+}
+function takeSnapshot(){
+  const m=computeMetrics();
+  const lbl=document.getElementById("snapLabel").value.trim()||new Date().toLocaleDateString();
+  S.snapshots.push({date:new Date().toISOString(),label:lbl,m});
+  document.getElementById("snapLabel").value="";
+  save();renderSnapshots();
+}
+function renderSnapshots(){
+  const list=document.getElementById("snapList");
+  document.getElementById("snapCount").textContent=S.snapshots.length?S.snapshots.length+" "+t("snapTaken"):"";
+  if(!S.snapshots.length){document.getElementById("dashCharts").style.display="none";
+    document.getElementById("dashEmpty").style.display="block";list.innerHTML="";return}
+  document.getElementById("dashEmpty").style.display="none";
+  document.getElementById("dashCharts").style.display="grid";
+  list.innerHTML="<table class='tbl' style='margin-bottom:16px'><thead><tr><th>#</th><th>"+t("takeSnapshot")+"</th><th class='num'>"+t("dashValue")+"</th><th class='num'>"+t("kpiBarrierIdx")+"</th><th class='num'>"+t("kpiDeployCompletion")+"</th><th style='width:30px'></th></tr></thead><tbody>"+
+    S.snapshots.map((s,i)=>"<tr><td>"+(i+1)+"</td><td>"+esc(s.label)+"<div style='font-size:10px;color:var(--faint)'>"+new Date(s.date).toLocaleString()+"</div></td>"+
+    "<td class='num mono'>"+s.m.avgScore.toFixed(1)+"</td><td class='num mono'>"+s.m.barrier.toFixed(1)+"</td><td class='num mono'>"+Math.round(s.m.deploy)+"%</td>"+
+    "<td class='num'><button class='cell-x' data-act='snapDel' data-i='"+i+"'>×</button></td></tr>").join("")+"</tbody></table>";
+  const labels=S.snapshots.map(s=>s.label);
+  const mk=(k,data,color,opt)=>{destroy(k);const o=Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}},opt||{});
+    charts[k]=new Chart(document.getElementById(k),{type:"line",data:{labels,datasets:[{data,borderColor:color,backgroundColor:color+"22",borderWidth:2,tension:.25,fill:true,pointRadius:3}]},options:o});};
+  mk("chartTrendScore",S.snapshots.map(s=>+s.m.avgScore.toFixed(2)),"#0B6FA4",{scales:{y:{min:0,max:10}}});
+  mk("chartTrendBarrier",S.snapshots.map(s=>+s.m.barrier.toFixed(2)),"#0E9AA7",{scales:{y:{min:0,max:5}}});
+  mk("chartTrendDeploy",S.snapshots.map(s=>Math.round(s.m.deploy)),"#D98A2B",{scales:{y:{min:0,max:100}}});
+  destroy("chartTrendPms");
+  charts.chartTrendPms=new Chart(document.getElementById("chartTrendPms"),{type:"bar",
+    data:{labels,datasets:[
+      {label:t("settler"),data:S.snapshots.map(s=>s.m.rev.settler),backgroundColor:"#AEB7BD"},
+      {label:t("migrator"),data:S.snapshots.map(s=>s.m.rev.migrator),backgroundColor:"#5193B4"},
+      {label:t("pioneer"),data:S.snapshots.map(s=>s.m.rev.pioneer),backgroundColor:"#0B6FA4"}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true}},plugins:{legend:{position:"bottom",labels:{boxWidth:12,font:{size:10}}}}}});
+}
+
+/* ============================ Render all ============================ */
+function renderAll(){
+  document.getElementById("metaCompany").value=S.meta.company||"";
+  document.getElementById("metaMarket").value=S.meta.market||"";
+  applyI18n();
+  renderCanvasTable();renderErrc();renderCanvasChart();
+  renderTobeTable();renderBarriers();renderTobeChart();
+  renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();
+  renderDeploy();
+  renderSnapshots();
+}
+function refreshCharts(){renderCanvasChart();renderTobeChart();renderPmsNow();renderPmsFut()}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
+
+/* ============================ Events ============================ */
+document.addEventListener("input",e=>{
+  const a=e.target.dataset.act;if(!a)return;const d=e.target.dataset;const val=e.target.value;
+  switch(a){
+    case "factorName":{const f=S.factors.find(x=>x.id===d.id);if(f)f.name=val;renderErrc();renderTobeTable();renderBarriers();renderDeployMatrix();refreshCharts();break}
+    case "score":{S.scores[d.f]=S.scores[d.f]||{};S.scores[d.f][d.p]=val===""?null:clamp(val,0,10);renderCanvasChart();renderTobeTable();renderTobeChart();break}
+    case "errc":{S.errc[d.id]=val;renderErrc();renderTobeTable();renderBarriers();renderDeploy();break}
+    case "tobe":{S.tobe[d.id]=val===""?null:clamp(val,0,10);renderTobeChart();renderBarriers();break}
+    case "bStr":{S.barriers[d.f][d.i].strength=val===""?null:clamp(val,1,5);updateBarrierKpis();break}
+    case "bNote":{S.barriers[d.f][d.i].note=val;break}
+    case "pName":{find(S.products,d.id).name=val;renderFutureTable();renderPmsNow();renderPmsFut();break}
+    case "pCo":{find(S.products,d.id).company=val;renderFutureTable();renderPmsNow();renderPmsFut();renderProductTable();break}
+    case "pSmp":{find(S.products,d.id).smpNow=num(val);renderPmsNow();renderFutureTable();break}
+    case "pShare":{find(S.products,d.id).shareNow=num(val);renderPmsNow();break}
+    case "pRev":{find(S.products,d.id).revNow=num(val);renderPmsNow();renderFutureTable();break}
+    case "pFsmp":{find(S.products,d.id).smpFut=num(val);renderPmsFut();break}
+    case "pFshare":{find(S.products,d.id).shareFut=num(val);renderPmsFut();break}
+    case "pFrev":{find(S.products,d.id).revFut=num(val);renderPmsFut();break}
+    case "uName":{find(S.units,d.id).name=val;break}
+    case "dOwner":case "dObj":case "dKpi":{setDeploy(d.u,d.f,a==="dOwner"?"owner":a==="dObj"?"obj":"kpi",val);updateDeployKpis();break}
+    case "hEdit":{S.hoshin[d.k][+d.i]=val;break}
+    case "metaCompany":{S.meta.company=val;renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();break}
+    case "metaMarket":{S.meta.market=val;applyI18n();break}
+  }
+  save();
+});
+document.getElementById("metaCompany").addEventListener("input",e=>{S.meta.company=e.target.value;renderFutureTable();renderPmsNow();renderPmsFut();save()});
+document.getElementById("metaMarket").addEventListener("input",e=>{S.meta.market=e.target.value;applyI18n();save()});
+
+document.addEventListener("change",e=>{
+  const a=e.target.dataset.act;if(!a)return;const d=e.target.dataset;
+  if(a==="bType"){S.barriers[d.f][d.i].type=e.target.value;save()}
+});
+
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act,d=b.dataset;
+  switch(a){
+    case "delFactor":{S.factors=S.factors.filter(f=>f.id!==d.id);delete S.scores[d.id];delete S.tobe[d.id];delete S.errc[d.id];delete S.barriers[d.id];renderAll();save();break}
+    case "delPlayer":{const p=find(S.players,d.id);if(p&&p.isCompany){return}S.players=S.players.filter(x=>x.id!==d.id);renderCanvasTable();renderCanvasChart();renderTobeChart();save();break}
+    case "pDel":{S.products=S.products.filter(p=>p.id!==d.id);renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();save();break}
+    case "uDel":{S.units=S.units.filter(u=>u.id!==d.id);delete S.deploy[d.id];renderDeployMatrix();save();break}
+    case "bAdd":{S.barriers[d.f]=S.barriers[d.f]||[];S.barriers[d.f].push({type:"brand",strength:3,note:""});renderBarriers();save();break}
+    case "bDel":{S.barriers[d.f].splice(+d.i,1);renderBarriers();save();break}
+    case "hAdd":{S.hoshin[d.k].push("");renderHoshin();save();break}
+    case "hDel":{S.hoshin[d.k].splice(+d.i,1);renderHoshin();save();break}
+    case "hCorr":{const st=S.hoshin[d.store];const key=d.i+"_"+d.j;st[key]=((st[key]||0)+1)%3;renderHoshin();save();break}
+    case "snapDel":{S.snapshots.splice(+d.i,1);renderSnapshots();save();break}
+  }
+});
+document.getElementById("addFactor").onclick=()=>{S.factors.push({id:uid("f"),name:(LANG==="ua"?"Новий фактор":"New factor")});renderAll();save()};
+document.getElementById("addPlayer").onclick=()=>{const c=peerPlayers().length;S.players.push({id:uid("p"),name:(LANG==="ua"?"Конкурент":"Competitor")+" "+(c+1),isCompany:false,color:PEER_COLORS[c%PEER_COLORS.length]});renderCanvasTable();renderCanvasChart();renderTobeChart();save()};
+document.getElementById("addProduct").onclick=()=>{S.products.push({id:uid("pr"),name:(LANG==="ua"?"Продукт":"Product"),company:S.meta.company||"",smpNow:50,shareNow:10,revNow:100,smpFut:null,shareFut:null,revFut:null});renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();save()};
+document.getElementById("addUnit").onclick=()=>{S.units.push({id:uid("u"),name:(LANG==="ua"?"Підрозділ":"Unit")});renderDeployMatrix();save()};
+document.getElementById("btnSnap").onclick=takeSnapshot;
+
+document.querySelectorAll("#deploySeg button").forEach(btn=>btn.onclick=()=>{S.deployMode=btn.dataset.mode;renderDeploy();save()});
+
+/* helpers */
+function find(arr,id){return arr.find(x=>x.id===id)}
+function num(v){return v===""?null:(+v)}
+function clamp(v,a,b){v=+v;if(isNaN(v))return null;return Math.max(a,Math.min(b,v))}
+function setDeploy(u,f,k,v){S.deploy[u]=S.deploy[u]||{};S.deploy[u][f]=S.deploy[u][f]||{};S.deploy[u][f][k]=v}
+function updateBarrierKpis(){renderBarriers()}
+function updateDeployKpis(){const facs=rcFactors();const total=S.units.length*facs.length;let filled=0;
+  S.units.forEach(u=>facs.forEach(f=>{const c=(S.deploy[u.id]&&S.deploy[u.id][f.id])||{};if(c.owner||c.obj||c.kpi)filled++}));
+  document.getElementById("kpiDeploy").textContent=total?Math.round(filled/total*100)+"%":"–";
+  const uncovered=facs.filter(f=>!S.units.some(u=>{const c=(S.deploy[u.id]&&S.deploy[u.id][f.id])||{};return c.owner||c.obj||c.kpi})).length;
+  document.getElementById("kpiUncovered").textContent=uncovered+"/"+facs.length;
+  document.getElementById("kpiCells").textContent=filled+"/"+(total||0);}
+
+/* lang */
+function setLang(l){LANG=l;S.meta.lang=l;document.getElementById("langEN").classList.toggle("on",l==="en");
+  document.getElementById("langUA").classList.toggle("on",l==="ua");renderAll();save()}
+document.getElementById("langEN").onclick=()=>setLang("en");
+document.getElementById("langUA").onclick=()=>setLang("ua");
+
+/* file ops */
+document.getElementById("btnExport").onclick=()=>{
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=(S.meta.company||"blue-ocean")+"-workbench.json";a.click();};
+document.getElementById("btnImport").onclick=()=>document.getElementById("fileInput").click();
+document.getElementById("fileInput").onchange=e=>{const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{try{S=Object.assign(blank(),JSON.parse(r.result));LANG=S.meta.lang||"en";
+    document.getElementById("langEN").classList.toggle("on",LANG==="en");document.getElementById("langUA").classList.toggle("on",LANG==="ua");
+    renderAll();save()}catch(err){alert("Invalid JSON file")}};r.readAsText(f);e.target.value="";};
+document.getElementById("btnNew").onclick=()=>{if(confirm(t("confirmNew"))){S=blank();S.meta.lang=LANG;renderAll();save()}};
+document.getElementById("btnPdf").onclick=()=>{window.print()};
+document.getElementById("btnExample").onclick=loadExample;
+
+/* nav active state on scroll */
+const secs=["tool1","tool2","tool3","tool4","tool5","tool6"];
+const obs=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){
+  document.querySelectorAll(".navitem").forEach(n=>n.classList.toggle("active",n.getAttribute("href")==="#"+en.target.id))}})},{rootMargin:"-30% 0px -60% 0px"});
+secs.forEach(id=>obs.observe(document.getElementById(id)));
+
+/* reflow charts before print */
+window.addEventListener("beforeprint",()=>{Object.values(charts).forEach(c=>{try{c.resize()}catch(e){}})});
+window.addEventListener("afterprint",()=>{Object.values(charts).forEach(c=>{try{c.resize()}catch(e){}})});
+
+/* ============================ Example data (illustrative) ============================ */
+function loadExample(){
+  S=blank();S.meta={company:"monobank",market:LANG==="ua"?"Роздрібний банкінг (Україна)":"Retail banking (Ukraine)",lang:LANG};
+  const facNamesEn=["Branch network","Mobile app experience","Card delivery speed","Cashback & rewards",
+    "24/7 in-app support","Deposit rates","Credit accessibility","Account & transfer fees (low)",
+    "Product breadth (FOP, invest)","Brand trust"];
+  const facNamesUa=["Мережа відділень","Досвід мобільного застосунку","Швидкість доставки картки","Кешбек і винагороди",
+    "Підтримка 24/7 у застосунку","Ставки за депозитами","Доступність кредитів","Низькі комісії за рахунок/перекази",
+    "Широта продуктів (ФОП, інвест)","Довіра до бренду"];
+  const names=LANG==="ua"?facNamesUa:facNamesEn;
+  names.forEach(n=>S.factors.push({id:uid("f"),name:n}));
+  S.players=[
+    {id:uid("p"),name:"monobank",isCompany:true,color:"#0B6FA4"},
+    {id:uid("p"),name:"PrivatBank",isCompany:false,color:"#C8472E"},
+    {id:uid("p"),name:"PUMB",isCompany:false,color:"#D98A2B"},
+    {id:uid("p"),name:"Raiffeisen",isCompany:false,color:"#8C5A8C"}
+  ];
+  // scores [mono,privat,pumb,raif]
+  const sc=[
+    [1,9,7,6],   // branch network
+    [10,7,6,5],  // app exp
+    [9,6,5,4],   // card delivery
+    [9,6,5,4],   // cashback
+    [9,6,5,5],   // support
+    [6,7,7,6],   // deposit rates
+    [8,7,6,6],   // credit access
+    [9,5,5,4],   // low fees
+    [6,9,7,7],   // breadth
+    [8,8,6,7]    // brand
+  ];
+  S.factors.forEach((f,i)=>{S.scores[f.id]={};S.players.forEach((p,j)=>{S.scores[f.id][p.id]=sc[i][j]})});
+  const errc=["eliminate","raise","raise","create","raise","reduce","","reduce","create","raise"];
+  const tobe=[1,10,10,10,10,6,8,9,8,9];
+  S.factors.forEach((f,i)=>{S.errc[f.id]=errc[i];S.tobe[f.id]=tobe[i]});
+  // barriers for raise/create
+  const bmap={
+    1:[["scale",4,"In-house engineering scale and release cadence rivals can't match"],["switching",4,"Everything lives in one app — leaving means rebuilding habits"]],
+    2:[["network",4,"Referral loops and social money transfers grow with the base"],["brand",3,"Speed of delivery is part of the brand promise"]],
+    3:[["cultural",4,"Gamified design culture is hard to copy organically"],["brand",4,"\"Fun bank\" image incumbents can't credibly claim"]],
+    4:[["scale",3,"Lean cost base funds always-on support"],["data",3,"Support tooling trained on app interaction data"]],
+    8:[["data",4,"FOP/SME data feeds underwriting and cross-sell"],["switching",3,"Bundled business+personal flows raise switching cost"]],
+    9:[["brand",4,"Trust built on transparency and reliability"]]
+  };
+  const bmapUa={
+    1:[["scale",4,"Власний інжиніринг і темп релізів, які конкуренти не повторять"],["switching",4,"Усе в одному застосунку — піти означає змінити звички"]],
+    2:[["network",4,"Реферальні петлі та перекази ростуть разом із базою"],["brand",3,"Швидкість доставки — частина обіцянки бренду"]],
+    3:[["cultural",4,"Гейміфіковану культуру дизайну важко скопіювати"],["brand",4,"Імідж «банку, що приносить радість» не привласнити"]],
+    4:[["scale",3,"Ощадлива база витрат фінансує підтримку 24/7"],["data",3,"Інструменти підтримки навчені на даних взаємодії"]],
+    8:[["data",4,"Дані ФОП/МСБ живлять скоринг і крос-продажі"],["switching",3,"Зв'язка бізнес+особисте підвищує витрати на перехід"]],
+    9:[["brand",4,"Довіра побудована на прозорості та надійності"]]
+  };
+  const useB=LANG==="ua"?bmapUa:bmap;
+  S.factors.forEach((f,i)=>{if(useB[i]){S.barriers[f.id]=useB[i].map(b=>({type:b[0],strength:b[1],note:b[2]}))}});
+  // products: name, company, smpNow, shareNow, revNow, smpFut, shareFut, revFut
+  const prods=[
+    ["monobank app","monobank",88,32,140,92,40,180],
+    ["mono FOP (SME)","monobank",78,18,60,86,28,110],
+    ["mono Invest","monobank",70,6,18,82,14,55],
+    ["White-label \"mono\"","monobank",60,4,12,75,10,40],
+    ["Privat24","PrivatBank",62,40,200,null,null,null],
+    ["Privat cards","PrivatBank",30,35,150,null,null,null],
+    ["PUMB online","PUMB",45,16,70,null,null,null],
+    ["PUMB premium","PUMB",35,8,45,null,null,null],
+    ["Raif Online","Raiffeisen",40,14,80,null,null,null],
+    ["Raif business","Raiffeisen",28,12,75,null,null,null]
+  ];
+  prods.forEach(p=>S.products.push({id:uid("pr"),name:p[0],company:p[1],smpNow:p[2],shareNow:p[3],revNow:p[4],smpFut:p[5],shareFut:p[6],revFut:p[7]}));
+  // units
+  const unitsEn=["Product / App","Engineering","Customer support","Risk & credit","SME / FOP","Brand & growth"];
+  const unitsUa=["Продукт / Застосунок","Інженерія","Підтримка клієнтів","Ризики та кредит","МСБ / ФОП","Бренд і зростання"];
+  (LANG==="ua"?unitsUa:unitsEn).forEach(n=>S.units.push({id:uid("u"),name:n}));
+  // a few deployment cells (owner/obj/kpi) for raise/create factors
+  const rc=rcFactors();
+  function setCell(uIdx,fIdx,owner,obj,kpi){const u=S.units[uIdx],f=rc[fIdx];if(!u||!f)return;S.deploy[u.id]=S.deploy[u.id]||{};S.deploy[u.id][f.id]={owner,obj,kpi}}
+  if(rc.length>=6){
+    setCell(0,0,"Head of App",LANG==="ua"?"Утримати #1 за UX":"Stay #1 on app UX",LANG==="ua"?"NPS застосунку ≥70":"App NPS ≥70");
+    setCell(1,0,"CTO",LANG==="ua"?"Тижневі релізи":"Weekly releases",LANG==="ua"?"Час релізу <7д":"Lead time <7d");
+    setCell(2,3,"Head of CX",LANG==="ua"?"Відповідь <30с":"Reply <30s",LANG==="ua"?"CSAT ≥95%":"CSAT ≥95%");
+    setCell(5,2,"CMO",LANG==="ua"?"Гейміфікація як ров":"Gamification moat",LANG==="ua"?"DAU/MAU ≥0.5":"DAU/MAU ≥0.5");
+    setCell(4,4,"Head of SME",LANG==="ua"?"ФОП-онбординг <5хв":"FOP onboarding <5min",LANG==="ua"?"Активні ФОП +30%":"Active FOP +30%");
+  }
+  // hoshin sample
+  S.hoshin.objectives=LANG==="ua"?["Стати головним банком у застосунку","Лідер у МСБ/ФОП","Прибуткове зростання бази"]:["Be the primary in-app bank","Lead SME / FOP banking","Profitable base growth"];
+  S.hoshin.initiatives=LANG==="ua"?["Реліз-машина щотижня","Гейміфікація 2.0","ФОП-платформа","Кешбек-партнерства"]:["Weekly release machine","Gamification 2.0","FOP platform","Cashback partnerships"];
+  S.hoshin.kpis=LANG==="ua"?["NPS ≥70","DAU/MAU ≥0.5","Активні ФОП +30%","CIR ≤40%"]:["NPS ≥70","DAU/MAU ≥0.5","Active FOP +30%","CIR ≤40%"];
+  S.hoshin.owners=LANG==="ua"?["Продукт","Інженерія","МСБ","Бренд"]:["Product","Engineering","SME","Brand"];
+  S.hoshin.cOI={"0_0":2,"0_1":2,"1_2":2,"2_0":1,"2_3":2};
+  S.hoshin.cIK={"0_0":2,"1_1":2,"2_2":2,"3_3":1};
+  // baseline snapshot
+  S.snapshots=[];
+  LANG=S.meta.lang;
+  document.getElementById("langEN").classList.toggle("on",LANG==="en");
+  document.getElementById("langUA").classList.toggle("on",LANG==="ua");
+  renderAll();takeSnapshotSilent("Baseline");save();
+}
+function takeSnapshotSilent(lbl){const m=computeMetrics();S.snapshots.push({date:new Date().toISOString(),label:lbl,m});renderSnapshots()}
+
+/* ============================ Boot ============================ */
+(function boot(){
+  if(load()){LANG=S.meta.lang||"en"}
+  else{ // seed a small blank starter so tables aren't empty
+    ["","",""].forEach((_,i)=>S.factors.push({id:uid("f"),name:(LANG==="ua"?"Фактор ":"Factor ")+(i+1)}));
+    S.players=[{id:uid("p"),name:(LANG==="ua"?"Моя компанія":"My company"),isCompany:true,color:"#0B6FA4"},
+      {id:uid("p"),name:(LANG==="ua"?"Конкурент 1":"Competitor 1"),isCompany:false,color:"#C8472E"}];
+  }
+  document.getElementById("langEN").classList.toggle("on",LANG==="en");
+  document.getElementById("langUA").classList.toggle("on",LANG==="ua");
+  renderAll();
+})();
+</script>
+</body>
+</html>
