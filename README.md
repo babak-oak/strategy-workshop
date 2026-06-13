@@ -66,4 +66,4 @@ The tools follow the value-innovation logic of *Blue Ocean Strategy* (Kim & Maub
 
 ## License
 
-Add your preferred license here (e.g. MIT) before sharing publicly.
+free to use
