@@ -38,6 +38,8 @@ a{color:var(--ocean)}
 .brand .wave{font-family:"Space Grotesk";font-weight:700;font-size:18px;letter-spacing:-.02em}
 .brand .wave b{color:var(--ocean-soft)}
 .brand .sub{font-size:11px;color:#9aa6ae;letter-spacing:.14em;text-transform:uppercase}
+.brand .ver{font-family:"IBM Plex Mono";font-size:10px;color:#5b6670;border:1px solid #39424c;
+  border-radius:4px;padding:1px 6px;letter-spacing:.04em}
 .tb-actions{display:flex;gap:8px;flex-wrap:wrap}
 .btn{background:#262d36;color:#e8edf0;border:1px solid #39424c;border-radius:var(--r);
   padding:7px 12px;font-size:12.5px;font-weight:500;transition:.15s;white-space:nowrap}
@@ -207,6 +209,7 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
     <div class="brand">
       <div class="wave">Blue<b>Ocean</b> Workbench</div>
       <div class="sub" data-i18n="tagline">Value-innovation toolkit</div>
+      <span class="ver" id="verTag"></span>
     </div>
     <div class="tb-actions">
       <button class="btn" id="btnExample" data-i18n="loadExample">Load example</button>
@@ -583,6 +586,9 @@ const KEY="boswb_v1";
 let S=blank();
 let charts={};
 function uid(p){return p+Math.random().toString(36).slice(2,8)}
+function seedPlayers(){return [
+  {id:uid("p"),name:(LANG==="ua"?"Моя компанія":"My company"),isCompany:true,color:"#0B6FA4"},
+  {id:uid("p"),name:(LANG==="ua"?"Конкурент 1":"Competitor 1"),isCompany:false,color:"#C8472E"}];}
 function defaultStages(){return [
   {key:"refine",focus:"",objectives:"",activities:"",kpi:""},
   {key:"develop",focus:"",objectives:"",activities:"",kpi:""},
@@ -590,7 +596,7 @@ function defaultStages(){return [
   {key:"gtm",focus:"",objectives:"",activities:"",kpi:""}];}
 function blank(){
   return {meta:{company:"",market:"",lang:"en"},
-    factors:[],players:[],scores:{},tobe:{},errc:{},barriers:{},
+    factors:[],players:seedPlayers(),scores:{},tobe:{},errc:{},barriers:{},
     products:[],units:[],deploy:{},deployMode:"matrix",
     hoshin:{objectives:[],initiatives:[],kpis:[],owners:[],
       cOI:{},cIK:{},cIO:{},cKO:{}},
@@ -600,7 +606,15 @@ function blank(){
 function normalize(){
   if(!Array.isArray(S.capabilities))S.capabilities=[];
   if(!Array.isArray(S.stages)||S.stages.length!==4)S.stages=defaultStages();
-  (S.factors||[]).forEach(f=>{if(f.note==null)f.note=""});
+  if(!Array.isArray(S.players)||!S.players.length)S.players=seedPlayers();
+  else if(!S.players.some(p=>p.isCompany))S.players[0].isCompany=true;
+  S.scores=S.scores||{};S.tobe=S.tobe||{};
+  (S.factors||[]).forEach(f=>{
+    if(f.note==null)f.note="";
+    S.scores[f.id]=S.scores[f.id]||{};
+    S.players.forEach(p=>{if(!(p.id in S.scores[f.id]))S.scores[f.id][p.id]=5});
+    if(!(f.id in S.tobe))S.tobe[f.id]=5;
+  });
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const r=localStorage.getItem(KEY);if(r){S=Object.assign(blank(),JSON.parse(r));normalize();return true}}catch(e){}return false}
@@ -1152,7 +1166,12 @@ document.addEventListener("click",e=>{
     case "capDel":{S.capabilities=S.capabilities.filter(x=>x.id!==d.id);renderCapabilities();save();break}
   }
 });
-document.getElementById("addFactor").onclick=()=>{S.factors.push({id:uid("f"),name:(LANG==="ua"?"Новий фактор":"New factor"),note:""});renderAll();save()};
+document.getElementById("addFactor").onclick=()=>{
+  const f={id:uid("f"),name:(LANG==="ua"?"Новий фактор":"New factor"),note:""};
+  S.factors.push(f);
+  S.scores[f.id]={};S.players.forEach(p=>{S.scores[f.id][p.id]=5});
+  S.tobe[f.id]=5;
+  renderAll();save();};
 document.getElementById("addPlayer").onclick=()=>{const c=peerPlayers().length;S.players.push({id:uid("p"),name:(LANG==="ua"?"Конкурент":"Competitor")+" "+(c+1),isCompany:false,color:PEER_COLORS[c%PEER_COLORS.length]});renderCanvasTable();renderCanvasChart();renderTobeChart();save()};
 document.getElementById("addProduct").onclick=()=>{S.products.push({id:uid("pr"),name:(LANG==="ua"?"Продукт":"Product"),company:S.meta.company||"",smpNow:50,shareNow:10,revNow:100,smpFut:null,shareFut:null,revFut:null});renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();save()};
 document.getElementById("addUnit").onclick=()=>{S.units.push({id:uid("u"),name:(LANG==="ua"?"Підрозділ":"Unit")});renderDeployMatrix();save()};
@@ -1336,12 +1355,16 @@ function takeSnapshotSilent(lbl){const m=computeMetrics();S.snapshots.push({date
 (function boot(){
   if(load()){LANG=S.meta.lang||"en"}
   else{ // seed a small blank starter so tables aren't empty
-    ["","",""].forEach((_,i)=>S.factors.push({id:uid("f"),name:(LANG==="ua"?"Фактор ":"Factor ")+(i+1)}));
-    S.players=[{id:uid("p"),name:(LANG==="ua"?"Моя компанія":"My company"),isCompany:true,color:"#0B6FA4"},
-      {id:uid("p"),name:(LANG==="ua"?"Конкурент 1":"Competitor 1"),isCompany:false,color:"#C8472E"}];
+    ["","",""].forEach((_,i)=>{
+      const f={id:uid("f"),name:(LANG==="ua"?"Фактор ":"Factor ")+(i+1),note:""};
+      S.factors.push(f);S.scores[f.id]={};S.players.forEach(p=>{S.scores[f.id][p.id]=5});S.tobe[f.id]=5;
+    });
   }
   document.getElementById("langEN").classList.toggle("on",LANG==="en");
   document.getElementById("langUA").classList.toggle("on",LANG==="ua");
+  var BUILD="build 2026-06-16c";
+  document.getElementById("verTag").textContent=BUILD;
+  console.log("Blue Ocean Workbench — "+BUILD);
   renderAll();
 })();
 </script>
