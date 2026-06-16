@@ -148,6 +148,26 @@ section.tool{background:var(--surface);border:1px solid var(--line);border-radiu
 .empty-state{color:var(--faint);font-size:13px;text-align:center;padding:34px;border:1px dashed var(--line);border-radius:8px}
 
 .footnote{font-size:11px;color:var(--faint);margin-top:14px}
+.drag-h{cursor:grab;color:var(--faint);user-select:none;text-align:center;width:24px;font-size:14px}
+.drag-h:active{cursor:grabbing}
+tr.dragging{opacity:.35}
+tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
+.note-inp{display:block;width:100%;border:1px solid transparent;background:transparent;border-radius:4px;
+  padding:3px 5px;margin-top:3px;font-size:11px;color:var(--muted);font-style:italic}
+.note-inp:focus{outline:none;border-color:var(--ocean);background:#fff;color:var(--ink);font-style:normal}
+.cap-group{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:12px}
+.cap-group h4{font-size:12.5px;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cap-group .tag{width:10px;height:10px;border-radius:3px;display:inline-block}
+.cap-people .tag{background:var(--ocean)}.cap-tech .tag{background:var(--reef)}
+.cap-assets .tag{background:var(--amber)}.cap-process .tag{background:#8C5A8C}
+.foot-notes{font-size:11px;color:var(--muted);margin-top:10px;display:flex;flex-direction:column;gap:3px;
+  border-top:1px dashed var(--line);padding-top:8px}
+.foot-notes:empty{display:none}
+.foot-notes b{color:var(--ink);font-weight:600}
+.stage-row-h{font-family:"Space Grotesk";font-weight:600;font-size:12px;min-width:130px;background:#f6f9f8}
+.prio-low{color:var(--good)}.prio-med{color:var(--amber)}.prio-high{color:var(--red);font-weight:600}
+#stageTable textarea{width:100%;border:1px solid transparent;background:transparent;border-radius:4px;padding:4px 5px;font-size:12px}
+#stageTable textarea:focus{outline:none;border-color:var(--ocean);background:#fff}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:8px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:14px;height:3px;border-radius:2px;display:inline-block}
@@ -213,7 +233,9 @@ section.tool{background:var(--surface);border:1px solid var(--line);border-radiu
     <a class="navitem" href="#tool3"><span class="n">03</span><span class="lbl" data-i18n="nav3">Portfolio map — current</span></a>
     <a class="navitem" href="#tool4"><span class="n">04</span><span class="lbl" data-i18n="nav4">Portfolio map — future</span></a>
     <a class="navitem" href="#tool5"><span class="n">05</span><span class="lbl" data-i18n="nav5">Value deployment</span></a>
-    <a class="navitem" href="#tool6"><span class="n">06</span><span class="lbl" data-i18n="nav6">Measurement</span></a>
+    <a class="navitem" href="#tool6"><span class="n">06</span><span class="lbl" data-i18n="nav6">Capabilities & resources</span></a>
+    <a class="navitem" href="#tool7"><span class="n">07</span><span class="lbl" data-i18n="nav7">Product stages</span></a>
+    <a class="navitem" href="#tool8"><span class="n">08</span><span class="lbl" data-i18n="nav8">Measurement</span></a>
   </aside>
 
   <main class="col">
@@ -239,6 +261,7 @@ section.tool{background:var(--surface);border:1px solid var(--line);border-radiu
         <div class="chart-wrap">
           <div class="chart-box tall"><canvas id="chartCanvas"></canvas></div>
           <div class="legend" id="canvasLegend"></div>
+          <div class="foot-notes" id="canvasNotes"></div>
         </div>
         <h3 style="margin:24px 0 0;font-size:15px" data-i18n="errcTitle">ERRC grid</h3>
         <p class="hint" data-i18n="errcHint">Assign each factor: Eliminate, Reduce, Raise or Create. This drives the to-be move and the barriers register in step 02.</p>
@@ -259,6 +282,7 @@ section.tool{background:var(--surface);border:1px solid var(--line);border-radiu
         <div class="chart-wrap">
           <div class="chart-box tall"><canvas id="chartTobe"></canvas></div>
           <div class="legend" id="tobeLegend"></div>
+          <div class="foot-notes" id="tobeNotes"></div>
         </div>
         <h3 style="margin:24px 0 0;font-size:15px" data-i18n="barrierTitle">Barriers-to-imitation register</h3>
         <p class="hint" data-i18n="barrierHint">Only Raise / Create factors appear here — these are the lead positions worth defending. Add the moats that make imitation hard and rate strength 1–5.</p>
@@ -343,12 +367,43 @@ section.tool{background:var(--surface);border:1px solid var(--line);border-radiu
       </div>
     </section>
 
-    <!-- 06 -->
+    <!-- 06 Capabilities -->
     <section class="tool" id="tool6">
       <div class="sec-head">
         <div class="step">06</div>
-        <div><h2 data-i18n="t6title">Measurement — track the move over time</h2>
-        <div class="desc" data-i18n="t6desc">Take a dated snapshot of the whole workbench. The dashboard shows how your value lead, portfolio migration, barriers and deployment evolve.</div></div>
+        <div><h2 data-i18n="capTitle">Capabilities & resources — existing vs to-be</h2>
+        <div class="desc" data-i18n="capDesc">Audit what you have today versus what the to-be value proposition demands, split into People, Technology, Assets and Processes.</div></div>
+      </div>
+      <div class="sec-body">
+        <p class="hint" data-i18n="capHint">For each item rate today's state and the to-be state, and flag the priority of closing the gap.</p>
+        <div id="capBlocks"></div>
+        <div class="kpis" style="margin-top:18px">
+          <div class="kpi"><div class="v" id="kpiCapItems">–</div><div class="l" data-i18n="kpiCapItems">Capabilities mapped</div></div>
+          <div class="kpi"><div class="v" id="kpiCapGaps">–</div><div class="l" data-i18n="kpiCapGaps">High-priority gaps</div></div>
+          <div class="kpi"><div class="v" id="kpiCapCat">–</div><div class="l" data-i18n="kpiCapCat">Categories covered</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 Product stages -->
+    <section class="tool" id="tool7">
+      <div class="sec-head">
+        <div class="step">07</div>
+        <div><h2 data-i18n="stageTitle">Product-owner focus by stage</h2>
+        <div class="desc" data-i18n="stageDesc">For each stage of the product journey, set where the product owner should focus, the objectives, the key activities and the exit KPI.</div></div>
+      </div>
+      <div class="sec-body">
+        <p class="hint" data-i18n="stageHint">Idea refinement → Idea development → Deployment → Go-to-market. Keep each stage's focus tight so owners know what "done" looks like before moving on.</p>
+        <div style="overflow-x:auto"><table class="tbl" id="stageTable"></table></div>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section class="tool" id="tool8">
+      <div class="sec-head">
+        <div class="step">08</div>
+        <div><h2 data-i18n="t8title">Measurement — track the move over time</h2>
+        <div class="desc" data-i18n="t8desc">Take a dated snapshot of the whole workbench. The dashboard shows how your value lead, portfolio migration, barriers and deployment evolve.</div></div>
       </div>
       <div class="sec-body">
         <div class="snap-actions">
@@ -378,16 +433,17 @@ const I18N={
     exportJson:"Export JSON",importJson:"Import JSON",savePdf:"Save as PDF",
     companyName:"Company",marketName:"Market",
     nav1:"Value proposition — as-is",nav2:"To-be & barriers",nav3:"Portfolio map — current",
-    nav4:"Portfolio map — future",nav5:"Value deployment",nav6:"Measurement",
+    nav4:"Portfolio map — future",nav5:"Value deployment",nav6:"Capabilities & resources",
+    nav7:"Product stages",nav8:"Measurement",
     t1title:"Existing value proposition vs peers",
-    t1desc:"Score every competing factor 0–10 for your company and each peer. The strategy canvas draws the value curves; classify each factor in the ERRC grid below.",
-    t1hint:"Rows = competing factors of the market. Columns = players. Your company curve is drawn in ocean blue; peers in red-ocean tones.",
+    t1desc:"Score every competing factor 0–10 for your company and each peer, and set the to-be level — all in one table. The strategy canvas draws the value curves; classify each factor in the ERRC grid below.",
+    t1hint:"Rows = competing factors. Drag the ⠿ handle to reorder. Columns = players, plus the to-be column. Keep names short and use the note field for detail.",
     addFactor:"+ Add factor",addPlayer:"+ Add player",
     errcTitle:"ERRC grid",errcHint:"Assign each factor: Eliminate, Reduce, Raise or Create. This drives the to-be move and the barriers register in step 02.",
     eliminate:"Eliminate",reduce:"Reduce",raise:"Raise",create:"Create",none:"— unassigned —",
     factor:"Factor",classification:"ERRC",
     t2title:"To-be value proposition & barriers to imitation",
-    t2desc:"Set the target (to-be) level for each factor. For every Raise and Create factor, register the barriers that protect your lead and rate each barrier's strength.",
+    t2desc:"The to-be level is set in step 01. Here, review the to-be value curve against today and the peer average, and register the barriers that protect every Raise/Create factor.",
     t2hint:"The dashed line is your to-be curve; the solid line your current curve; the muted line is the peer average.",
     colNow:"Now",colTobe:"To-be",
     barrierTitle:"Barriers-to-imitation register",
@@ -422,23 +478,39 @@ const I18N={
     settler:"Settler",migrator:"Migrator",pioneer:"Pioneer",
     peerAvg:"Peer average",yourNow:"Your curve (now)",yourTobe:"Your curve (to-be)",
     today:"Today",target:"Target",confirmNew:"Clear everything and start a blank project?",
-    snapTaken:"snapshot(s) saved",del:"delete"
+    snapTaken:"snapshot(s) saved",del:"delete",
+    notePh:"short note / comment",colUplift:"Δ",
+    capTitle:"Capabilities & resources — existing vs to-be",
+    capDesc:"Audit what you have today versus what the to-be value proposition demands, split into People, Technology, Assets and Processes. The gaps feed deployment and the roadmap.",
+    capHint:"For each item rate today's state and the to-be state, and flag the priority of closing the gap. Empty categories mean an unexamined source of advantage.",
+    cap_people:"People",cap_tech:"Technology",cap_assets:"Assets",cap_process:"Processes",
+    capItem:"Capability / resource",capExisting:"Existing state",capTobe:"To-be state",capPriority:"Gap priority",addCap:"+ Add",
+    prio_low:"Low",prio_med:"Medium",prio_high:"High",
+    kpiCapItems:"Capabilities mapped",kpiCapGaps:"High-priority gaps",kpiCapCat:"Categories covered",
+    stageTitle:"Product-owner focus by stage",
+    stageDesc:"For each stage of the product journey, set where the product owner should focus, the objectives, the key activities and the exit KPI.",
+    stageHint:"Idea refinement → Idea development → Deployment → Go-to-market. Keep each stage's focus tight so owners know what \"done\" looks like before moving on.",
+    stageCol:"Stage",stFocus:"Owner focus",stObjectives:"Objectives",stActivities:"Key activities",stKpi:"Exit KPI / gate",
+    stage_refine:"Idea refinement",stage_develop:"Idea development",stage_deploy:"Deployment",stage_gtm:"Go-to-market",
+    t8title:"Measurement — track the move over time",
+    t8desc:"Take a dated snapshot of the whole workbench. The dashboard shows how your value lead, portfolio migration, barriers and deployment evolve."
   },
   ua:{
     tagline:"Інструментарій ціннісних інновацій",loadExample:"Приклад",newProject:"Новий / очистити",
     exportJson:"Експорт JSON",importJson:"Імпорт JSON",savePdf:"Зберегти у PDF",
     companyName:"Компанія",marketName:"Ринок",
     nav1:"Ціннісна пропозиція — поточна",nav2:"Цільова та бар'єри",nav3:"Карта портфеля — поточна",
-    nav4:"Карта портфеля — майбутня",nav5:"Розгортання цінності",nav6:"Вимірювання",
+    nav4:"Карта портфеля — майбутня",nav5:"Розгортання цінності",nav6:"Спроможності та ресурси",
+    nav7:"Стадії продукту",nav8:"Вимірювання",
     t1title:"Поточна ціннісна пропозиція проти конкурентів",
-    t1desc:"Оцініть кожен фактор конкуренції 0–10 для вашої компанії та кожного конкурента. Стратегічне полотно будує криві цінності; класифікуйте кожен фактор у сітці ERRC нижче.",
-    t1hint:"Рядки — фактори конкуренції ринку. Колонки — гравці. Крива вашої компанії — синім кольором океану; конкуренти — відтінками червоного океану.",
+    t1desc:"Оцініть кожен фактор конкуренції 0–10 для вашої компанії та кожного конкурента, і задайте цільовий рівень — усе в одній таблиці. Стратегічне полотно будує криві цінності; класифікуйте кожен фактор у сітці ERRC нижче.",
+    t1hint:"Рядки — фактори конкуренції. Перетягуйте ручку ⠿ для зміни порядку. Колонки — гравці та колонка «Ціль». Тримайте назви короткими, деталі — у полі нотатки.",
     addFactor:"+ Додати фактор",addPlayer:"+ Додати гравця",
     errcTitle:"Сітка ERRC",errcHint:"Призначте кожен фактор: Усунути, Зменшити, Підвищити або Створити. Це формує цільовий рух і реєстр бар'єрів у кроці 02.",
     eliminate:"Усунути",reduce:"Зменшити",raise:"Підвищити",create:"Створити",none:"— не призначено —",
     factor:"Фактор",classification:"ERRC",
     t2title:"Цільова ціннісна пропозиція та бар'єри для копіювання",
-    t2desc:"Встановіть цільовий рівень для кожного фактора. Для кожного фактора Підвищити та Створити зареєструйте бар'єри, що захищають лідерство, та оцініть їхню силу.",
+    t2desc:"Цільовий рівень задається у кроці 01. Тут перегляньте цільову криву цінності проти поточної та середньої по конкурентах і зареєструйте бар'єри, що захищають кожен фактор Підвищити/Створити.",
     t2hint:"Пунктир — ваша цільова крива; суцільна — поточна крива; приглушена — середнє по конкурентах.",
     colNow:"Зараз",colTobe:"Ціль",
     barrierTitle:"Реєстр бар'єрів для копіювання",
@@ -473,7 +545,22 @@ const I18N={
     settler:"Поселенець",migrator:"Мігрант",pioneer:"Піонер",
     peerAvg:"Сер. по конкурентах",yourNow:"Ваша крива (зараз)",yourTobe:"Ваша крива (ціль)",
     today:"Сьогодні",target:"Ціль",confirmNew:"Очистити все та почати з чистого проєкту?",
-    snapTaken:"знімків збережено",del:"видалити"
+    snapTaken:"знімків збережено",del:"видалити",
+    notePh:"короткий коментар",colUplift:"Δ",
+    capTitle:"Спроможності та ресурси — наявні проти цільових",
+    capDesc:"Оцініть, що ви маєте сьогодні, проти того, що вимагає цільова ціннісна пропозиція, у розрізі Люди, Технології, Активи та Процеси. Розриви живлять розгортання та дорожню карту.",
+    capHint:"Для кожного пункту оцініть сьогоднішній і цільовий стан та позначте пріоритет закриття розриву. Порожні категорії — недосліджене джерело переваги.",
+    cap_people:"Люди",cap_tech:"Технології",cap_assets:"Активи",cap_process:"Процеси",
+    capItem:"Спроможність / ресурс",capExisting:"Наявний стан",capTobe:"Цільовий стан",capPriority:"Пріоритет розриву",addCap:"+ Додати",
+    prio_low:"Низький",prio_med:"Середній",prio_high:"Високий",
+    kpiCapItems:"Нанесено спроможностей",kpiCapGaps:"Пріоритетні розриви",kpiCapCat:"Охоплено категорій",
+    stageTitle:"Фокус власника продукту за стадіями",
+    stageDesc:"Для кожної стадії шляху продукту визначте, де має фокусуватися власник, цілі, ключові активності та KPI виходу.",
+    stageHint:"Уточнення ідеї → Розробка ідеї → Розгортання → Вихід на ринок. Тримайте фокус кожної стадії чітким, щоб власники розуміли критерій «готово».",
+    stageCol:"Стадія",stFocus:"Фокус власника",stObjectives:"Цілі",stActivities:"Ключові активності",stKpi:"KPI виходу / гейт",
+    stage_refine:"Уточнення ідеї",stage_develop:"Розробка ідеї",stage_deploy:"Розгортання",stage_gtm:"Вихід на ринок",
+    t8title:"Вимірювання — відстеження руху в часі",
+    t8desc:"Зробіть датований знімок усієї майстерні. Панель показує, як змінюються ваше лідерство в цінності, міграція портфеля, бар'єри та розгортання."
   }
 };
 let LANG="en";
@@ -493,16 +580,27 @@ const KEY="boswb_v1";
 let S=blank();
 let charts={};
 function uid(p){return p+Math.random().toString(36).slice(2,8)}
+function defaultStages(){return [
+  {key:"refine",focus:"",objectives:"",activities:"",kpi:""},
+  {key:"develop",focus:"",objectives:"",activities:"",kpi:""},
+  {key:"deploy",focus:"",objectives:"",activities:"",kpi:""},
+  {key:"gtm",focus:"",objectives:"",activities:"",kpi:""}];}
 function blank(){
   return {meta:{company:"",market:"",lang:"en"},
     factors:[],players:[],scores:{},tobe:{},errc:{},barriers:{},
     products:[],units:[],deploy:{},deployMode:"matrix",
     hoshin:{objectives:[],initiatives:[],kpis:[],owners:[],
       cOI:{},cIK:{},cIO:{},cKO:{}},
+    capabilities:[],stages:defaultStages(),
     snapshots:[]};
 }
+function normalize(){
+  if(!Array.isArray(S.capabilities))S.capabilities=[];
+  if(!Array.isArray(S.stages)||S.stages.length!==4)S.stages=defaultStages();
+  (S.factors||[]).forEach(f=>{if(f.note==null)f.note=""});
+}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
-function load(){try{const r=localStorage.getItem(KEY);if(r){S=Object.assign(blank(),JSON.parse(r));return true}}catch(e){}return false}
+function load(){try{const r=localStorage.getItem(KEY);if(r){S=Object.assign(blank(),JSON.parse(r));normalize();return true}}catch(e){}return false}
 
 const PEER_COLORS=["#C8472E","#D98A2B","#9A6B3F","#8C5A8C","#6E7C46"];
 function companyPlayer(){return S.players.find(p=>p.isCompany)}
@@ -521,19 +619,26 @@ function applyI18n(){
 }
 
 /* ============================ Tool 1: Canvas table + ERRC ============================ */
+let dragFid=null;
 function renderCanvasTable(){
   const tb=document.getElementById("canvasTable");
-  let h="<thead><tr><th style='min-width:150px'>"+t("factor")+"</th>";
+  let h="<thead><tr><th class='drag-h'></th><th style='min-width:150px'>"+t("factor")+"</th>";
   S.players.forEach(p=>{h+="<th class='num'><span class='swatch' style='background:"+p.color+"'></span>"+esc(p.name)+
     " <button class='cell-x' data-act='delPlayer' data-id='"+p.id+"'>×</button></th>"});
+  h+="<th class='num' style='background:#eaf3f9'>"+t("colTobe")+"</th>";
   h+="<th class='num'>"+t("classification")+"</th></tr></thead><tbody>";
   S.factors.forEach(f=>{
-    h+="<tr><td><input data-act='factorName' data-id='"+f.id+"' value='"+esc(f.name)+"'> ";
-    h+="<button class='cell-x' data-act='delFactor' data-id='"+f.id+"'>×</button></td>";
+    h+="<tr draggable='true' data-fid='"+f.id+"'>";
+    h+="<td class='drag-h' title='drag to reorder'>⠿</td>";
+    h+="<td><input data-act='factorName' data-id='"+f.id+"' value='"+esc(f.name)+"'> "+
+      "<button class='cell-x' data-act='delFactor' data-id='"+f.id+"'>×</button>"+
+      "<input class='note-inp' data-act='factorNote' data-id='"+f.id+"' placeholder='"+t("notePh")+"' value='"+esc(f.note||"")+"'></td>";
     S.players.forEach(p=>{
       const v=(S.scores[f.id]&&S.scores[f.id][p.id]!=null)?S.scores[f.id][p.id]:"";
       h+="<td class='num'><input class='score' type='number' min='0' max='10' step='0.5' data-act='score' data-f='"+f.id+"' data-p='"+p.id+"' value='"+v+"'></td>";
     });
+    const tobe=S.tobe[f.id]!=null?S.tobe[f.id]:"";
+    h+="<td class='num' style='background:#f5fafd'><input class='score' type='number' min='0' max='10' step='0.5' data-act='tobe' data-id='"+f.id+"' value='"+tobe+"'></td>";
     const cls=S.errc[f.id]||"";
     h+="<td><select data-act='errc' data-id='"+f.id+"'>"+
       "<option value=''"+(cls===""?" selected":"")+">"+t("none")+"</option>"+
@@ -542,6 +647,26 @@ function renderCanvasTable(){
   });
   h+="</tbody>";
   tb.innerHTML=h;
+  attachDrag(tb);
+}
+function attachDrag(tb){
+  tb.querySelectorAll("tr[draggable]").forEach(row=>{
+    row.addEventListener("dragstart",e=>{dragFid=row.dataset.fid;row.classList.add("dragging");try{e.dataTransfer.effectAllowed="move"}catch(_){}});
+    row.addEventListener("dragend",()=>{dragFid=null;tb.querySelectorAll("tr").forEach(r=>r.classList.remove("dragging","drag-over"))});
+    row.addEventListener("dragover",e=>{e.preventDefault();row.classList.add("drag-over")});
+    row.addEventListener("dragleave",()=>row.classList.remove("drag-over"));
+    row.addEventListener("drop",e=>{e.preventDefault();const targetFid=row.dataset.fid;
+      if(!dragFid||dragFid===targetFid)return;
+      const from=S.factors.findIndex(f=>f.id===dragFid),to=S.factors.findIndex(f=>f.id===targetFid);
+      if(from<0||to<0)return;
+      const moved=S.factors.splice(from,1)[0];S.factors.splice(to,0,moved);
+      renderCanvasTable();renderErrc();renderCanvasChart();renderTobeTable();renderTobeChart();renderBarriers();renderDeploy();save();});
+  });
+}
+function renderNotes(id){
+  const el=document.getElementById(id);if(!el)return;
+  const wn=S.factors.filter(f=>f.note&&f.note.trim());
+  el.innerHTML=wn.map(f=>"<span><b>"+esc(f.name)+"</b> — "+esc(f.note)+"</span>").join("");
 }
 function renderErrc(){
   const g=document.getElementById("errcGrid");
@@ -558,14 +683,17 @@ function renderErrc(){
 function renderTobeTable(){
   const tb=document.getElementById("tobeTable");
   const c=companyPlayer();
-  let h="<thead><tr><th style='min-width:150px'>"+t("factor")+"</th><th class='num'>ERRC</th><th class='num'>"+t("colNow")+"</th><th class='num'>"+t("colTobe")+"</th></tr></thead><tbody>";
+  let h="<thead><tr><th style='min-width:150px'>"+t("factor")+"</th><th class='num'>ERRC</th><th class='num'>"+t("colNow")+"</th><th class='num'>"+t("colTobe")+"</th><th class='num'>"+t("colUplift")+"</th></tr></thead><tbody>";
   S.factors.forEach(f=>{
-    const now=(c&&S.scores[f.id]&&S.scores[f.id][c.id]!=null)?S.scores[f.id][c.id]:"";
-    const tobe=S.tobe[f.id]!=null?S.tobe[f.id]:"";
+    const now=(c&&S.scores[f.id]&&S.scores[f.id][c.id]!=null)?+S.scores[f.id][c.id]:null;
+    const tobe=S.tobe[f.id]!=null?+S.tobe[f.id]:null;
     const cls=S.errc[f.id]||"";
+    const up=(now!=null&&tobe!=null)?(tobe-now):null;
+    const upCls=up>0?"prio-low":up<0?"prio-high":"";
     h+="<tr><td>"+esc(f.name)+"</td><td class='num'>"+(cls?t(cls):"—")+"</td>"+
-      "<td class='num mono'>"+(now===""?"–":now)+"</td>"+
-      "<td class='num'><input class='score' type='number' min='0' max='10' step='0.5' data-act='tobe' data-id='"+f.id+"' value='"+tobe+"'></td></tr>";
+      "<td class='num mono'>"+(now==null?"–":now)+"</td>"+
+      "<td class='num mono'>"+(tobe==null?"–":tobe)+"</td>"+
+      "<td class='num mono "+upCls+"'>"+(up==null?"–":(up>0?"+":"")+up)+"</td></tr>";
   });
   h+="</tbody>";
   tb.innerHTML=h;
@@ -785,8 +913,10 @@ function renderCanvasChart(){
     options:{responsive:true,maintainAspectRatio:false,
       scales:{y:{min:0,max:10,title:{display:true,text:LANG==="ua"?"Рівень пропозиції":"Offering level"}},
         x:{ticks:{maxRotation:38,minRotation:0,autoSkip:false,font:{size:10}}}},
-      plugins:{legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}}}}});
+      plugins:{legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}},
+        tooltip:{callbacks:{afterBody:items=>{const f=S.factors[items[0].dataIndex];return (f&&f.note)?["",f.note]:[]}}}}}});
   legendInto("canvasLegend",S.players.map(p=>({c:p.color,l:p.name,line:true})));
+  renderNotes("canvasNotes");
 }
 function renderTobeChart(){
   const {labels,ds}=lineDatasets(true);
@@ -795,7 +925,9 @@ function renderTobeChart(){
     data:{labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,
       scales:{y:{min:0,max:10},x:{ticks:{maxRotation:38,autoSkip:false,font:{size:10}}}},
-      plugins:{legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}}}}});
+      plugins:{legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}},
+        tooltip:{callbacks:{afterBody:items=>{const f=S.factors[items[0].dataIndex];return (f&&f.note)?["",f.note]:[]}}}}}});
+  renderNotes("tobeNotes");
 }
 function pmsBubbles(products,outlineMine){
   const cName=(S.meta.company||"").toLowerCase();
@@ -902,6 +1034,46 @@ function renderSnapshots(){
     options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true}},plugins:{legend:{position:"bottom",labels:{boxWidth:12,font:{size:10}}}}}});
 }
 
+/* ============================ Tool 6: capabilities ============================ */
+const CAP_CATS=["people","tech","assets","process"];
+function renderCapabilities(){
+  const wrap=document.getElementById("capBlocks");if(!wrap)return;
+  let h="";
+  CAP_CATS.forEach(cat=>{
+    h+="<div class='cap-group cap-"+cat+"'><h4><span class='tag'></span>"+t("cap_"+cat)+"</h4>";
+    h+="<table class='tbl'><thead><tr><th style='min-width:130px'>"+t("capItem")+"</th><th>"+t("capExisting")+"</th><th>"+t("capTobe")+"</th><th style='width:120px'>"+t("capPriority")+"</th><th style='width:30px'></th></tr></thead><tbody>";
+    S.capabilities.filter(x=>x.cat===cat).forEach(x=>{
+      h+="<tr><td><input data-act='capName' data-id='"+x.id+"' value='"+esc(x.name||"")+"'></td>";
+      h+="<td><input data-act='capExist' data-id='"+x.id+"' value='"+esc(x.existing||"")+"'></td>";
+      h+="<td><input data-act='capTobe' data-id='"+x.id+"' value='"+esc(x.tobe||"")+"'></td>";
+      h+="<td><select data-act='capPrio' data-id='"+x.id+"'>"+["low","med","high"].map(p=>"<option value='"+p+"'"+(x.priority===p?" selected":"")+">"+t("prio_"+p)+"</option>").join("")+"</select></td>";
+      h+="<td class='num'><button class='cell-x' data-act='capDel' data-id='"+x.id+"'>×</button></td></tr>";
+    });
+    h+="</tbody></table><div class='addrow'><button data-act='capAdd' data-cat='"+cat+"'>"+t("addCap")+"</button></div></div>";
+  });
+  wrap.innerHTML=h;
+  renderCapKpis();
+}
+function renderCapKpis(){
+  document.getElementById("kpiCapItems").textContent=S.capabilities.length;
+  document.getElementById("kpiCapGaps").textContent=S.capabilities.filter(x=>x.priority==="high").length;
+  document.getElementById("kpiCapCat").textContent=new Set(S.capabilities.map(x=>x.cat)).size+"/4";
+}
+/* ============================ Tool 7: product stages ============================ */
+function renderStages(){
+  const tb=document.getElementById("stageTable");if(!tb)return;
+  let h="<thead><tr><th class='stage-row-h'>"+t("stageCol")+"</th><th>"+t("stFocus")+"</th><th>"+t("stObjectives")+"</th><th>"+t("stActivities")+"</th><th>"+t("stKpi")+"</th></tr></thead><tbody>";
+  S.stages.forEach((s,i)=>{
+    h+="<tr><td class='stage-row-h'>"+(i+1)+". "+t("stage_"+s.key)+"</td>";
+    ["focus","objectives","activities","kpi"].forEach(field=>{
+      h+="<td><textarea rows='2' data-act='stEdit' data-i='"+i+"' data-field='"+field+"'>"+esc(s[field]||"")+"</textarea></td>";
+    });
+    h+="</tr>";
+  });
+  h+="</tbody>";
+  tb.innerHTML=h;
+}
+
 /* ============================ Render all ============================ */
 function renderAll(){
   document.getElementById("metaCompany").value=S.meta.company||"";
@@ -911,6 +1083,7 @@ function renderAll(){
   renderTobeTable();renderBarriers();renderTobeChart();
   renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();
   renderDeploy();
+  renderCapabilities();renderStages();
   renderSnapshots();
 }
 function refreshCharts(){renderCanvasChart();renderTobeChart();renderPmsNow();renderPmsFut()}
@@ -921,6 +1094,12 @@ document.addEventListener("input",e=>{
   const a=e.target.dataset.act;if(!a)return;const d=e.target.dataset;const val=e.target.value;
   switch(a){
     case "factorName":{const f=S.factors.find(x=>x.id===d.id);if(f)f.name=val;renderErrc();renderTobeTable();renderBarriers();renderDeployMatrix();refreshCharts();break}
+    case "factorNote":{const f=find(S.factors,d.id);if(f)f.note=val;renderNotes("canvasNotes");renderNotes("tobeNotes");break}
+    case "capName":{const x=find(S.capabilities,d.id);if(x)x.name=val;break}
+    case "capExist":{const x=find(S.capabilities,d.id);if(x)x.existing=val;break}
+    case "capTobe":{const x=find(S.capabilities,d.id);if(x)x.tobe=val;break}
+    case "capPrio":{const x=find(S.capabilities,d.id);if(x)x.priority=val;renderCapKpis();break}
+    case "stEdit":{S.stages[+d.i][d.field]=val;break}
     case "score":{S.scores[d.f]=S.scores[d.f]||{};S.scores[d.f][d.p]=val===""?null:clamp(val,0,10);renderCanvasChart();renderTobeTable();renderTobeChart();break}
     case "errc":{S.errc[d.id]=val;renderErrc();renderTobeTable();renderBarriers();renderDeploy();break}
     case "tobe":{S.tobe[d.id]=val===""?null:clamp(val,0,10);renderTobeChart();renderBarriers();break}
@@ -963,9 +1142,11 @@ document.addEventListener("click",e=>{
     case "hDel":{S.hoshin[d.k].splice(+d.i,1);renderHoshin();save();break}
     case "hCorr":{const st=S.hoshin[d.store];const key=d.i+"_"+d.j;st[key]=((st[key]||0)+1)%3;renderHoshin();save();break}
     case "snapDel":{S.snapshots.splice(+d.i,1);renderSnapshots();save();break}
+    case "capAdd":{S.capabilities.push({id:uid("c"),cat:d.cat,name:"",existing:"",tobe:"",priority:"med"});renderCapabilities();save();break}
+    case "capDel":{S.capabilities=S.capabilities.filter(x=>x.id!==d.id);renderCapabilities();save();break}
   }
 });
-document.getElementById("addFactor").onclick=()=>{S.factors.push({id:uid("f"),name:(LANG==="ua"?"Новий фактор":"New factor")});renderAll();save()};
+document.getElementById("addFactor").onclick=()=>{S.factors.push({id:uid("f"),name:(LANG==="ua"?"Новий фактор":"New factor"),note:""});renderAll();save()};
 document.getElementById("addPlayer").onclick=()=>{const c=peerPlayers().length;S.players.push({id:uid("p"),name:(LANG==="ua"?"Конкурент":"Competitor")+" "+(c+1),isCompany:false,color:PEER_COLORS[c%PEER_COLORS.length]});renderCanvasTable();renderCanvasChart();renderTobeChart();save()};
 document.getElementById("addProduct").onclick=()=>{S.products.push({id:uid("pr"),name:(LANG==="ua"?"Продукт":"Product"),company:S.meta.company||"",smpNow:50,shareNow:10,revNow:100,smpFut:null,shareFut:null,revFut:null});renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();save()};
 document.getElementById("addUnit").onclick=()=>{S.units.push({id:uid("u"),name:(LANG==="ua"?"Підрозділ":"Unit")});renderDeployMatrix();save()};
@@ -999,7 +1180,7 @@ document.getElementById("btnExport").onclick=()=>{
   a.download=(S.meta.company||"blue-ocean")+"-workbench.json";a.click();};
 document.getElementById("btnImport").onclick=()=>document.getElementById("fileInput").click();
 document.getElementById("fileInput").onchange=e=>{const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();r.onload=()=>{try{S=Object.assign(blank(),JSON.parse(r.result));LANG=S.meta.lang||"en";
+  const r=new FileReader();r.onload=()=>{try{S=Object.assign(blank(),JSON.parse(r.result));normalize();LANG=S.meta.lang||"en";
     document.getElementById("langEN").classList.toggle("on",LANG==="en");document.getElementById("langUA").classList.toggle("on",LANG==="ua");
     renderAll();save()}catch(err){alert("Invalid JSON file")}};r.readAsText(f);e.target.value="";};
 document.getElementById("btnNew").onclick=()=>{if(confirm(t("confirmNew"))){S=blank();S.meta.lang=LANG;renderAll();save()}};
@@ -1007,7 +1188,7 @@ document.getElementById("btnPdf").onclick=()=>{window.print()};
 document.getElementById("btnExample").onclick=loadExample;
 
 /* nav active state on scroll */
-const secs=["tool1","tool2","tool3","tool4","tool5","tool6"];
+const secs=["tool1","tool2","tool3","tool4","tool5","tool6","tool7","tool8"];
 const obs=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){
   document.querySelectorAll(".navitem").forEach(n=>n.classList.toggle("active",n.getAttribute("href")==="#"+en.target.id))}})},{rootMargin:"-30% 0px -60% 0px"});
 secs.forEach(id=>obs.observe(document.getElementById(id)));
@@ -1026,7 +1207,16 @@ function loadExample(){
     "Підтримка 24/7 у застосунку","Ставки за депозитами","Доступність кредитів","Низькі комісії за рахунок/перекази",
     "Широта продуктів (ФОП, інвест)","Довіра до бренду"];
   const names=LANG==="ua"?facNamesUa:facNamesEn;
-  names.forEach(n=>S.factors.push({id:uid("f"),name:n}));
+  names.forEach(n=>S.factors.push({id:uid("f"),name:n,note:""}));
+  const notesEn=["Decision: exit entirely — no branches at all","UX, speed and reliability of the app",
+    "From request to card in hand","% cashback plus partner offers","Median response time in chat",
+    "Annual deposit yield vs market","Approval rate and speed","All-in cost to the customer",
+    "FOP, investing and insurance breadth","Perceived reliability and transparency"];
+  const notesUa=["Рішення: повністю прибрати — жодних відділень","UX, швидкість і надійність застосунку",
+    "Від заявки до картки в руках","% кешбеку плюс партнерські пропозиції","Медіанний час відповіді в чаті",
+    "Річна дохідність депозитів проти ринку","Рівень і швидкість схвалення","Повна вартість для клієнта",
+    "Широта ФОП, інвестицій та страхування","Сприйнята надійність і прозорість"];
+  S.factors.forEach((f,i)=>{f.note=(LANG==="ua"?notesUa:notesEn)[i]||""});
   S.players=[
     {id:uid("p"),name:"monobank",isCompany:true,color:"#0B6FA4"},
     {id:uid("p"),name:"PrivatBank",isCompany:false,color:"#C8472E"},
@@ -1104,6 +1294,29 @@ function loadExample(){
   S.hoshin.owners=LANG==="ua"?["Продукт","Інженерія","МСБ","Бренд"]:["Product","Engineering","SME","Brand"];
   S.hoshin.cOI={"0_0":2,"0_1":2,"1_2":2,"2_0":1,"2_3":2};
   S.hoshin.cIK={"0_0":2,"1_1":2,"2_2":2,"3_3":1};
+  // capabilities & resources
+  const ua=LANG==="ua";
+  S.capabilities=[
+    {id:uid("c"),cat:"people",name:ua?"Продуктові інженери":"Product engineers",existing:ua?"Сильна власна команда":"Strong in-house team",tobe:ua?"+ ML-таланти":"+ ML talent",priority:"med"},
+    {id:uid("c"),cat:"people",name:ua?"Підтримка 24/7":"24/7 support staff",existing:"OK",tobe:ua?"Масштаб без втрати CSAT":"Scale without CSAT drop",priority:"high"},
+    {id:uid("c"),cat:"tech",name:ua?"Мобільна платформа":"Mobile platform",existing:ua?"Лідер ринку":"Market-leading",tobe:ua?"Утримати темп релізів":"Hold release pace",priority:"med"},
+    {id:uid("c"),cat:"tech",name:ua?"Скоринг на даних":"Data-driven scoring",existing:ua?"Базовий":"Basic",tobe:ua?"Реальний час для ФОП":"Real-time for FOP",priority:"high"},
+    {id:uid("c"),cat:"assets",name:ua?"Бренд":"Brand",existing:ua?"Високий рівень довіри":"High trust",tobe:ua?"Розширити на МСБ":"Extend into SME",priority:"med"},
+    {id:uid("c"),cat:"process",name:ua?"Онбординг у застосунку":"In-app onboarding",existing:"<5 min",tobe:ua?"<2 хв для ФОП":"<2 min for FOP",priority:"high"}
+  ];
+  // product stages
+  const stg=ua?{
+    refine:["Знайти блакитний океан, а не дрібний апсейл","Чітке ціннісне ядро","Інтерв'ю, ERRC, тест попиту","Гіпотезу цінності підтверджено"],
+    develop:["MVP навколо raise/create факторів","Працюючий продукт із вбудованими бар'єрами","Прототип, пілот, замір UX","NPS пілоту ≥60"],
+    deploy:["Надійність і собівартість","Стабільний реліз у масштабі","Інфраструктура, підтримка, моніторинг","Аптайм ≥99.9%"],
+    gtm:["Швидке зростання бази за стратегічною ціною","Залучити масовий сегмент","Реферали, партнерства, маркетинг","CAC у межах, активація ≥X%"]
+  }:{
+    refine:["Find a blue ocean, not a small upsell","A sharp value core","Interviews, ERRC, demand test","Value hypothesis validated"],
+    develop:["Build the MVP around raise/create factors","Working product with the moats built in","Prototype, pilot, measure UX","Pilot NPS ≥60"],
+    deploy:["Reliability and unit cost","Stable release at scale","Infra, support, monitoring","Uptime ≥99.9%"],
+    gtm:["Fast base growth at the strategic price","Win the mass segment","Referrals, partnerships, marketing","CAC in band, activation ≥X%"]
+  };
+  S.stages.forEach(s=>{const v=stg[s.key];if(v){s.focus=v[0];s.objectives=v[1];s.activities=v[2];s.kpi=v[3]}});
   // baseline snapshot
   S.snapshots=[];
   LANG=S.meta.lang;
