@@ -91,6 +91,7 @@ section.tool{background:var(--surface);border:1px solid var(--line);border-radiu
 .tbl td.num{text-align:center}
 .tbl input,.tbl select,.tbl textarea{width:100%;border:1px solid transparent;background:transparent;
   border-radius:4px;padding:4px 5px}
+.tbl input:not([type=number]){width:auto;min-width:64px;max-width:480px}
 .tbl input:focus,.tbl select:focus,.tbl textarea:focus{outline:none;border-color:var(--ocean);background:#fff}
 .tbl input.score{text-align:center;font-family:"IBM Plex Mono";max-width:64px}
 .tbl .swatch{width:11px;height:11px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:6px}
@@ -1116,8 +1117,26 @@ function renderAll(){
 function refreshCharts(){renderCanvasChart();renderTobeChart();renderPmsNow();renderPmsFut()}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
 
+/* ============================ Auto-size text fields ============================ */
+let _measureEl=null;
+function autosizeEl(el){
+  if(!el||el.offsetParent===null)return;
+  if(el.tagName==="TEXTAREA"){el.style.height="auto";el.style.height=Math.min(260,Math.max(34,el.scrollHeight))+"px";return;}
+  const cs=getComputedStyle(el);
+  const pad=parseFloat(cs.paddingLeft||0)+parseFloat(cs.paddingRight||0)+parseFloat(cs.borderLeftWidth||0)+parseFloat(cs.borderRightWidth||0);
+  if(!_measureEl){_measureEl=document.createElement("span");_measureEl.style.cssText="position:absolute;left:-9999px;top:-9999px;visibility:hidden;white-space:pre";document.body.appendChild(_measureEl);}
+  _measureEl.style.fontFamily=cs.fontFamily;_measureEl.style.fontSize=cs.fontSize;_measureEl.style.fontWeight=cs.fontWeight;
+  _measureEl.style.fontStyle=cs.fontStyle;_measureEl.style.letterSpacing=cs.letterSpacing;
+  _measureEl.textContent=el.value||el.placeholder||"";
+  const w=_measureEl.offsetWidth+pad+10;
+  el.style.width=Math.max(64,Math.min(480,w))+"px";
+}
+const AUTOSIZE_SEL=".tbl input:not([type=number]), #stageTable textarea";
+function autosizeAll(){document.querySelectorAll(AUTOSIZE_SEL).forEach(autosizeEl);}
+
 /* ============================ Events ============================ */
 document.addEventListener("input",e=>{
+  if(e.target.matches&&e.target.matches(AUTOSIZE_SEL))autosizeEl(e.target);
   const a=e.target.dataset.act;if(!a)return;const d=e.target.dataset;const val=e.target.value;
   switch(a){
     case "factorName":{const f=S.factors.find(x=>x.id===d.id);if(f)f.name=val;renderErrc();renderTobeTable();renderBarriers();renderDeployMatrix();refreshCharts();break}
@@ -1374,10 +1393,17 @@ function takeSnapshotSilent(lbl){const m=computeMetrics();S.snapshots.push({date
   }
   document.getElementById("langEN").classList.toggle("on",LANG==="en");
   document.getElementById("langUA").classList.toggle("on",LANG==="ua");
-  var BUILD="build 2026-06-16h";
+  var BUILD="build 2026-06-16i";
   document.getElementById("verTag").textContent=BUILD;
   console.log("Blue Ocean Workbench — "+BUILD);
   renderAll();
+  try{
+    const _m=document.querySelector("main");
+    const _obs=new MutationObserver(()=>{clearTimeout(window.__asT);window.__asT=setTimeout(autosizeAll,30)});
+    _obs.observe(_m,{childList:true,subtree:true});
+    autosizeAll();
+    window.addEventListener("resize",()=>{clearTimeout(window.__asT);window.__asT=setTimeout(autosizeAll,80)});
+  }catch(e){}
 })();
 </script>
 </body>
