@@ -788,16 +788,20 @@ function renderFutureTable(){
   if(!mine.length){h+="<tr><td colspan='7' style='color:var(--faint);text-align:center;padding:18px'>"+(LANG==="ua"?"Додайте продукти вашої компанії у кроці 03 (поле «Компанія» = «"+esc(cName||"…")+"»).":"Add products owned by your company in step 03 (set Company = \""+esc(cName||"…")+"\").")+"</td></tr>";}
   mine.forEach(p=>{
     h+="<tr><td><input data-act='pName' data-id='"+p.id+"' value='"+esc(p.name)+"'></td>";
-    h+="<td class='num mono'>"+(p.smpNow??"–")+"</td>";
+    h+="<td class='num'><input class='score' type='number' min='0' max='100' data-act='pSmp' data-id='"+p.id+"' value='"+(p.smpNow??"")+"'></td>";
     h+="<td class='num'><input class='score' type='number' min='0' max='100' data-act='pFsmp' data-id='"+p.id+"' value='"+(p.smpFut??"")+"'></td>";
-    h+="<td class='num mono'>"+(p.shareNow??"–")+"</td>";
+    h+="<td class='num'><input class='score' type='number' min='0' max='100' step='0.1' data-act='pShare' data-id='"+p.id+"' value='"+(p.shareNow??"")+"'></td>";
     h+="<td class='num'><input class='score' type='number' min='0' max='100' step='0.1' data-act='pFshare' data-id='"+p.id+"' value='"+(p.shareFut??"")+"'></td>";
-    h+="<td class='num mono'>"+(p.revNow??"–")+"</td>";
+    h+="<td class='num'><input class='score' type='number' min='0' data-act='pRev' data-id='"+p.id+"' value='"+(p.revNow??"")+"'></td>";
     h+="<td class='num'><input class='score' type='number' min='0' data-act='pFrev' data-id='"+p.id+"' value='"+(p.revFut??"")+"'></td></tr>";
   });
   h+="</tbody>";
   tb.innerHTML=h;
-  // product KPIs (tool3)
+  renderProductKpis();
+}
+function renderProductKpis(){
+  const cName=resolveCompanyName();
+  const mine=S.products.filter(p=>p.company&&cName&&p.company.toLowerCase()===cName.toLowerCase());
   const mineRev=mine.reduce((a,p)=>a+(+p.revNow||0),0);
   const pio=mine.filter(p=>(+p.smpNow||0)>=67).reduce((a,p)=>a+(+p.revNow||0),0);
   const set=mine.filter(p=>(+p.smpNow||0)<=33).reduce((a,p)=>a+(+p.revNow||0),0);
@@ -1134,9 +1138,9 @@ document.addEventListener("input",e=>{
     case "bNote":{S.barriers[d.f][d.i].note=val;break}
     case "pName":{find(S.products,d.id).name=val;renderPmsNow();renderPmsFut();break}
     case "pCo":{find(S.products,d.id).company=val;renderFutureTable();renderPmsNow();renderPmsFut();break}
-    case "pSmp":{find(S.products,d.id).smpNow=num(val);renderPmsNow();renderFutureTable();break}
-    case "pShare":{find(S.products,d.id).shareNow=num(val);renderPmsNow();break}
-    case "pRev":{find(S.products,d.id).revNow=num(val);renderPmsNow();renderFutureTable();break}
+    case "pSmp":{find(S.products,d.id).smpNow=num(val);renderPmsNow();renderPmsFut();renderProductKpis();break}
+    case "pShare":{find(S.products,d.id).shareNow=num(val);renderPmsNow();renderPmsFut();renderProductKpis();break}
+    case "pRev":{find(S.products,d.id).revNow=num(val);renderPmsNow();renderPmsFut();renderProductKpis();break}
     case "pFsmp":{find(S.products,d.id).smpFut=num(val);renderPmsFut();break}
     case "pFshare":{find(S.products,d.id).shareFut=num(val);renderPmsFut();break}
     case "pFrev":{find(S.products,d.id).revFut=num(val);renderPmsFut();break}
@@ -1370,7 +1374,7 @@ function takeSnapshotSilent(lbl){const m=computeMetrics();S.snapshots.push({date
   }
   document.getElementById("langEN").classList.toggle("on",LANG==="en");
   document.getElementById("langUA").classList.toggle("on",LANG==="ua");
-  var BUILD="build 2026-06-16g";
+  var BUILD="build 2026-06-16h";
   document.getElementById("verTag").textContent=BUILD;
   console.log("Blue Ocean Workbench — "+BUILD);
   renderAll();
