@@ -787,7 +787,7 @@ function renderFutureTable(){
     "<th class='num'>"+t("colRev")+"</th><th class='num'>"+t("colTgtRev")+"</th></tr></thead><tbody>";
   if(!mine.length){h+="<tr><td colspan='7' style='color:var(--faint);text-align:center;padding:18px'>"+(LANG==="ua"?"Додайте продукти вашої компанії у кроці 03 (поле «Компанія» = «"+esc(cName||"…")+"»).":"Add products owned by your company in step 03 (set Company = \""+esc(cName||"…")+"\").")+"</td></tr>";}
   mine.forEach(p=>{
-    h+="<tr><td>"+esc(p.name)+"</td>";
+    h+="<tr><td><input data-act='pName' data-id='"+p.id+"' value='"+esc(p.name)+"'></td>";
     h+="<td class='num mono'>"+(p.smpNow??"–")+"</td>";
     h+="<td class='num'><input class='score' type='number' min='0' max='100' data-act='pFsmp' data-id='"+p.id+"' value='"+(p.smpFut??"")+"'></td>";
     h+="<td class='num mono'>"+(p.shareNow??"–")+"</td>";
@@ -1132,7 +1132,7 @@ document.addEventListener("input",e=>{
     case "playerName":{const p=find(S.players,d.id);if(p)p.name=val;renderCanvasChart();break}
     case "bStr":{S.barriers[d.f][d.i].strength=val===""?null:clamp(val,1,5);updateBarrierKpis();break}
     case "bNote":{S.barriers[d.f][d.i].note=val;break}
-    case "pName":{find(S.products,d.id).name=val;renderFutureTable();renderPmsNow();renderPmsFut();break}
+    case "pName":{find(S.products,d.id).name=val;renderPmsNow();renderPmsFut();break}
     case "pCo":{find(S.products,d.id).company=val;renderFutureTable();renderPmsNow();renderPmsFut();break}
     case "pSmp":{find(S.products,d.id).smpNow=num(val);renderPmsNow();renderFutureTable();break}
     case "pShare":{find(S.products,d.id).shareNow=num(val);renderPmsNow();break}
@@ -1370,7 +1370,7 @@ function takeSnapshotSilent(lbl){const m=computeMetrics();S.snapshots.push({date
   }
   document.getElementById("langEN").classList.toggle("on",LANG==="en");
   document.getElementById("langUA").classList.toggle("on",LANG==="ua");
-  var BUILD="build 2026-06-16f";
+  var BUILD="build 2026-06-16g";
   document.getElementById("verTag").textContent=BUILD;
   console.log("Blue Ocean Workbench — "+BUILD);
   renderAll();
