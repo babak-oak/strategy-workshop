@@ -75,11 +75,16 @@ a{color:var(--ocean)}
 .col{display:flex;flex-direction:column;gap:26px;min-width:0}
 section.tool{background:var(--surface);border:1px solid var(--line);border-radius:10px;
   padding:26px 28px;box-shadow:var(--shadow);scroll-margin-top:80px}
-.sec-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+.sec-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px;cursor:pointer}
 .sec-head .step{font-family:"IBM Plex Mono";font-size:12px;font-weight:600;color:#fff;
   background:var(--ink);border-radius:5px;padding:4px 8px;letter-spacing:.04em;margin-top:2px}
 .sec-head h2{font-size:20px}
 .sec-head .desc{color:var(--muted);font-size:12.5px;margin-top:3px;max-width:64ch}
+.collapse-btn{margin-left:auto;background:none;border:1px solid var(--line);border-radius:6px;
+  color:var(--muted);width:28px;height:28px;font-size:13px;line-height:1;flex:none;transition:.15s}
+.collapse-btn:hover{background:#f3f6f5;color:var(--ink)}
+.tool.collapsed .collapse-btn{transform:rotate(-90deg)}
+.tool.collapsed .cin{display:none}
 .sec-body{margin-top:18px}
 .hint{font-size:12px;color:var(--faint);margin:0 0 12px;border-left:2px solid var(--ocean-soft);padding-left:10px}
 
@@ -91,9 +96,11 @@ section.tool{background:var(--surface);border:1px solid var(--line);border-radiu
 .tbl td.num{text-align:center}
 .tbl input,.tbl select,.tbl textarea{width:100%;border:1px solid transparent;background:transparent;
   border-radius:4px;padding:4px 5px}
-.tbl input:not([type=number]){width:auto;min-width:64px;max-width:480px}
+.tbl input:not([type=number]){width:auto;min-width:64px;max-width:480px;
+  field-sizing:content;min-inline-size:64px;max-inline-size:480px}
 .tbl input:focus,.tbl select:focus,.tbl textarea:focus{outline:none;border-color:var(--ocean);background:#fff}
 .tbl input.score{text-align:center;font-family:"IBM Plex Mono";max-width:64px}
+.tbl textarea{resize:vertical;min-height:30px;line-height:1.35;overflow:hidden}
 .tbl .swatch{width:11px;height:11px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:6px}
 .cell-x{color:var(--faint);background:none;border:0;font-size:14px;line-height:1;padding:2px 4px}
 .cell-x:hover{color:var(--red)}
@@ -197,8 +204,10 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
   .col{gap:0}
   section.tool{break-inside:avoid;page-break-inside:avoid;box-shadow:none;border:0;
     border-top:2px solid var(--ink);border-radius:0;padding:0 0 22px;margin-bottom:22px}
-  .addrow,.cell-x,.hadd{display:none!important}
+  .addrow,.cell-x,.hadd,.collapse-btn{display:none!important}
   .chart-box{height:300px}
+  .tool.collapsed .cin{display:none!important}
+  .tool.collapsed{break-inside:avoid}
   .print-head{display:block!important}
 }
 .print-head{display:none;margin-bottom:18px}
@@ -248,6 +257,7 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
     <a class="navitem" href="#tool6"><span class="n">06</span><span class="lbl" data-i18n="nav6">Capabilities & resources</span></a>
     <a class="navitem" href="#tool7"><span class="n">07</span><span class="lbl" data-i18n="nav7">Product stages</span></a>
     <a class="navitem" href="#tool8"><span class="n">08</span><span class="lbl" data-i18n="nav8">Measurement</span></a>
+    <a class="navitem" href="#tool9"><span class="n">09</span><span class="lbl" data-i18n="nav9">Next steps</span></a>
   </aside>
 
   <main class="col">
@@ -265,8 +275,8 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
       <div class="sec-body">
         <p class="hint" data-i18n="t1hint">Rows = competing factors of the market. Columns = players. Your company curve is drawn in ocean blue; peers in red-ocean tones.</p>
-        <div style="overflow-x:auto"><table class="tbl" id="canvasTable"></table></div>
-        <div class="addrow">
+        <div class="cin" style="overflow-x:auto"><table class="tbl" id="canvasTable"></table></div>
+        <div class="addrow cin">
           <button id="addFactor" data-i18n="addFactor">+ Add factor</button>
           <button id="addPlayer" data-i18n="addPlayer">+ Add player</button>
         </div>
@@ -290,7 +300,7 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
       <div class="sec-body">
         <p class="hint" data-i18n="t2hint">The dashed line is your to-be curve; the solid line your current curve; the muted line is the peer average.</p>
-        <div style="overflow-x:auto"><table class="tbl" id="tobeTable"></table></div>
+        <div class="cin" style="overflow-x:auto"><table class="tbl" id="tobeTable"></table></div>
         <div class="chart-wrap">
           <div class="chart-box tall"><canvas id="chartTobe"></canvas></div>
           <div class="legend" id="tobeLegend"></div>
@@ -298,7 +308,7 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
         </div>
         <h3 style="margin:24px 0 0;font-size:15px" data-i18n="barrierTitle">Barriers-to-imitation register</h3>
         <p class="hint" data-i18n="barrierHint">Only Raise / Create factors appear here — these are the lead positions worth defending. Add the moats that make imitation hard and rate strength 1–5.</p>
-        <div id="barrierBlocks"></div>
+        <div id="barrierBlocks" class="cin"></div>
         <div class="kpis" style="margin-top:18px">
           <div class="kpi"><div class="v" id="kpiBarrierIdx">–</div><div class="l" data-i18n="kpiBarrierIdx">Barrier strength index</div></div>
           <div class="kpi"><div class="v" id="kpiRaiseCreate">–</div><div class="l" data-i18n="kpiRaiseCreate">Raise+Create factors</div></div>
@@ -317,8 +327,8 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
       <div class="sec-body">
         <p class="hint" data-i18n="t3hint">Settlers (0–33) are me-too offerings; Migrators (34–66) offer more for less; Pioneers (67–100) are value-innovation moves. Your products are outlined; peers are filled.</p>
-        <div style="overflow-x:auto"><table class="tbl" id="productTable"></table></div>
-        <div class="addrow"><button id="addProduct" data-i18n="addProduct">+ Add product</button></div>
+        <div class="cin" style="overflow-x:auto"><table class="tbl" id="productTable"></table></div>
+        <div class="addrow cin"><button id="addProduct" data-i18n="addProduct">+ Add product</button></div>
         <div class="chart-wrap">
           <div class="chart-box tall"><canvas id="chartPmsNow"></canvas></div>
           <div class="legend" id="pmsLegend"></div>
@@ -341,8 +351,8 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
       <div class="sec-body">
         <p class="hint" data-i18n="t4hint">Hollow bubbles = today, solid bubbles = target. The arrow is the migration you commit to. Edit target level, share and revenue per product.</p>
-        <div style="overflow-x:auto"><table class="tbl" id="futureTable"></table></div>
-        <div class="addrow"><button id="addFutureProduct" data-i18n="addProduct">+ Add product</button></div>
+        <div class="cin" style="overflow-x:auto"><table class="tbl" id="futureTable"></table></div>
+        <div class="addrow cin"><button id="addFutureProduct" data-i18n="addProduct">+ Add product</button></div>
         <div class="chart-wrap">
           <div class="chart-box tall"><canvas id="chartPmsFut"></canvas></div>
           <div class="legend" id="futLegend"></div>
@@ -358,14 +368,14 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
         <div class="desc" data-i18n="t5desc">Tie each Raise/Create value factor to the parts of the company that must deliver it. Choose a simple deployment matrix or a full Hoshin Kanri X-matrix.</div></div>
       </div>
       <div class="sec-body">
-        <div class="seg" id="deploySeg">
+        <div class="seg cin" id="deploySeg">
           <button data-mode="matrix" class="on" data-i18n="modeMatrix">Value-deployment matrix</button>
           <button data-mode="hoshin" data-i18n="modeHoshin">Hoshin X-matrix</button>
         </div>
         <div id="deployMatrix">
           <p class="hint" data-i18n="t5mhint">Rows = organisational units, columns = Raise/Create value factors. In each cell name the owner, the objective and the KPI. Empty cells mean an undefended value factor.</p>
-          <div style="overflow-x:auto"><table class="tbl" id="deployTable"></table></div>
-          <div class="addrow"><button id="addUnit" data-i18n="addUnit">+ Add unit</button></div>
+          <div class="cin" style="overflow-x:auto"><table class="tbl" id="deployTable"></table></div>
+          <div class="addrow cin"><button id="addUnit" data-i18n="addUnit">+ Add unit</button></div>
           <div class="kpis" style="margin-top:18px">
             <div class="kpi"><div class="v" id="kpiDeploy">–</div><div class="l" data-i18n="kpiDeployCompletion">Deployment completion</div></div>
             <div class="kpi"><div class="v" id="kpiUnits">–</div><div class="l" data-i18n="kpiUnitsCount">Units engaged</div></div>
@@ -375,7 +385,7 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
         </div>
         <div id="deployHoshin" style="display:none">
           <p class="hint" data-i18n="t5hhint">Strategic objectives (S) link to initiatives (W), initiatives to KPIs/targets (N) and to owners (E). Click a corner cell to cycle the correlation: blank → ○ weak → ● strong.</p>
-          <div class="hoshin" id="hoshinGrid"></div>
+          <div class="hoshin cin" id="hoshinGrid"></div>
         </div>
       </div>
     </section>
@@ -389,7 +399,7 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
       <div class="sec-body">
         <p class="hint" data-i18n="capHint">For each item rate today's state and the to-be state, and flag the priority of closing the gap.</p>
-        <div id="capBlocks"></div>
+        <div id="capBlocks" class="cin"></div>
         <div class="kpis" style="margin-top:18px">
           <div class="kpi"><div class="v" id="kpiCapItems">–</div><div class="l" data-i18n="kpiCapItems">Capabilities mapped</div></div>
           <div class="kpi"><div class="v" id="kpiCapGaps">–</div><div class="l" data-i18n="kpiCapGaps">High-priority gaps</div></div>
@@ -407,7 +417,7 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
       <div class="sec-body">
         <p class="hint" data-i18n="stageHint">Idea refinement → Idea development → Deployment → Go-to-market. Keep each stage's focus tight so owners know what "done" looks like before moving on.</p>
-        <div style="overflow-x:auto"><table class="tbl" id="stageTable"></table></div>
+        <div class="cin" style="overflow-x:auto"><table class="tbl" id="stageTable"></table></div>
       </div>
     </section>
 
@@ -419,12 +429,12 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
         <div class="desc" data-i18n="t8desc">Take a dated snapshot of the whole workbench. The dashboard shows how your value lead, portfolio migration, barriers and deployment evolve.</div></div>
       </div>
       <div class="sec-body">
-        <div class="snap-actions">
+        <div class="snap-actions cin">
           <input id="snapLabel" placeholder="Snapshot label (e.g. Q2 baseline)">
           <button class="btn primary" id="btnSnap" data-i18n="takeSnapshot">Take snapshot</button>
           <span class="footnote" id="snapCount"></span>
         </div>
-        <div id="snapList"></div>
+        <div id="snapList" class="cin"></div>
         <div class="dash" id="dashCharts" style="display:none">
           <div class="chart-wrap"><h4 style="font-size:12px;color:var(--muted)" data-i18n="dashValue">Value lead — your avg factor score</h4><div class="chart-box"><canvas id="chartTrendScore"></canvas></div></div>
           <div class="chart-wrap"><h4 style="font-size:12px;color:var(--muted)" data-i18n="dashBarrier">Barrier strength index</h4><div class="chart-box"><canvas id="chartTrendBarrier"></canvas></div></div>
@@ -432,6 +442,24 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
           <div class="chart-wrap"><h4 style="font-size:12px;color:var(--muted)" data-i18n="dashDeploy">Deployment completion %</h4><div class="chart-box"><canvas id="chartTrendDeploy"></canvas></div></div>
         </div>
         <div class="empty-state" id="dashEmpty" data-i18n="dashEmpty">No snapshots yet. Take your first snapshot to start tracking movement.</div>
+      </div>
+    </section>
+
+    <!-- 09 Next steps -->
+    <section class="tool" id="tool9">
+      <div class="sec-head">
+        <div class="step">09</div>
+        <div><h2 data-i18n="nsTitle">Next steps</h2>
+        <div class="desc" data-i18n="nsDesc">List the key results you want to reach in the next 1–3 months, assign each to an existing or prospective team member, then push them to a weekly Google Calendar review.</div></div>
+      </div>
+      <div class="sec-body">
+        <p class="hint" data-i18n="nsHint">These become the agenda of a weekly recurring review. Keep each result outcome-oriented and owned by one person.</p>
+        <div class="cin" style="overflow-x:auto"><table class="tbl" id="nextStepsTable"></table></div>
+        <div class="addrow cin"><button id="addNextStep" data-i18n="addNextStep">+ Add key result</button></div>
+        <div style="margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <button class="btn primary" id="btnGcal" style="background:var(--ocean);border:1px solid var(--ocean);color:#fff;padding:9px 16px;border-radius:6px;font-weight:600" data-i18n="gcalBtn">Add to Google Calendar</button>
+          <span class="footnote" id="gcalNote" data-i18n="gcalNote">Opens Google Calendar pre-filled with a weekly event, Mondays at 9:00, starting the next Monday.</span>
+        </div>
       </div>
     </section>
   </main>
@@ -447,7 +475,7 @@ const I18N={
     companyName:"Company",marketName:"Market",
     nav1:"Value proposition — as-is",nav2:"To-be & barriers",nav3:"Portfolio map — current",
     nav4:"Portfolio map — future",nav5:"Value deployment",nav6:"Capabilities & resources",
-    nav7:"Product stages",nav8:"Measurement",
+    nav7:"Product stages",nav8:"Measurement",nav9:"Next steps",
     t1title:"Existing value proposition vs peers",
     t1desc:"Score every competing factor 0–10 for your company and each peer — the existing value proposition only. The strategy canvas draws the value curves; classify each factor in the ERRC grid below.",
     t1hint:"Rows = competing factors; drag the ⠿ handle to reorder. Columns = players — edit a competitor's name right in its header. Keep names short and use the note field for detail.",
@@ -506,7 +534,19 @@ const I18N={
     stageCol:"Stage",stFocus:"Owner focus",stObjectives:"Objectives",stActivities:"Key activities",stKpi:"Exit KPI / gate",
     stage_refine:"Idea refinement",stage_develop:"Idea development",stage_deploy:"Deployment",stage_gtm:"Go-to-market",
     t8title:"Measurement — track the move over time",
-    t8desc:"Take a dated snapshot of the whole workbench. The dashboard shows how your value lead, portfolio migration, barriers and deployment evolve."
+    t8desc:"Take a dated snapshot of the whole workbench. The dashboard shows how your value lead, portfolio migration, barriers and deployment evolve.",
+    nsTitle:"Next steps",
+    nsDesc:"List the key results you want to reach in the next 1–3 months, assign each to an existing or prospective team member, then push them to a weekly Google Calendar review.",
+    nsHint:"These become the agenda of a weekly recurring review. Keep each result outcome-oriented and owned by one person.",
+    nsResult:"Key result (1–3 months)",nsOwner:"Owner / team member",
+    nsResultPh:"e.g. Cut card delivery to <30 min",nsOwnerPh:"name or role",
+    nsEmpty:"No key results yet. Add the outcomes you want to hit in the next 1–3 months.",
+    addNextStep:"+ Add key result",
+    gcalBtn:"Add to Google Calendar",
+    gcalNote:"Opens Google Calendar pre-filled with a weekly event, Mondays at 9:00, starting the next Monday.",
+    gcalEmpty:"Add at least one key result first.",
+    gcalEventTitle:"weekly next-steps review",
+    gcalDetailsHead:"Key results for the next 1–3 months:"
   },
   ua:{
     tagline:"Інструментарій ціннісних інновацій",credits:"Подяки: Pavlo Shermeta · Chan Kim · Michael Porter · Hamilton Helmer",loadExample:"Приклад",newProject:"Новий / очистити",
@@ -514,7 +554,7 @@ const I18N={
     companyName:"Компанія",marketName:"Ринок",
     nav1:"Ціннісна пропозиція — поточна",nav2:"Цільова та бар'єри",nav3:"Карта портфеля — поточна",
     nav4:"Карта портфеля — майбутня",nav5:"Розгортання цінності",nav6:"Спроможності та ресурси",
-    nav7:"Стадії продукту",nav8:"Вимірювання",
+    nav7:"Стадії продукту",nav8:"Вимірювання",nav9:"Наступні кроки",
     t1title:"Поточна ціннісна пропозиція проти конкурентів",
     t1desc:"Оцініть кожен фактор конкуренції 0–10 для вашої компанії та кожного конкурента — лише поточна ціннісна пропозиція. Стратегічне полотно будує криві цінності; класифікуйте кожен фактор у сітці ERRC нижче.",
     t1hint:"Рядки — фактори конкуренції; перетягуйте ручку ⠿ для зміни порядку. Колонки — гравці: назву конкурента можна редагувати прямо в заголовку. Тримайте назви короткими, деталі — у полі нотатки.",
@@ -573,7 +613,19 @@ const I18N={
     stageCol:"Стадія",stFocus:"Фокус власника",stObjectives:"Цілі",stActivities:"Ключові активності",stKpi:"KPI виходу / гейт",
     stage_refine:"Уточнення ідеї",stage_develop:"Розробка ідеї",stage_deploy:"Розгортання",stage_gtm:"Вихід на ринок",
     t8title:"Вимірювання — відстеження руху в часі",
-    t8desc:"Зробіть датований знімок усієї майстерні. Панель показує, як змінюються ваше лідерство в цінності, міграція портфеля, бар'єри та розгортання."
+    t8desc:"Зробіть датований знімок усієї майстерні. Панель показує, як змінюються ваше лідерство в цінності, міграція портфеля, бар'єри та розгортання.",
+    nsTitle:"Наступні кроки",
+    nsDesc:"Перелічіть ключові результати, яких хочете досягти за 1–3 місяці, призначте кожен наявному чи потенційному члену команди, а потім додайте їх у щотижневий огляд у Google Calendar.",
+    nsHint:"Це стане порядком денним щотижневого огляду. Тримайте кожен результат орієнтованим на підсумок і з одним власником.",
+    nsResult:"Ключовий результат (1–3 міс.)",nsOwner:"Власник / член команди",
+    nsResultPh:"напр. Скоротити доставку картки до <30 хв",nsOwnerPh:"ім'я або роль",
+    nsEmpty:"Ще немає ключових результатів. Додайте підсумки, яких хочете досягти за 1–3 місяці.",
+    addNextStep:"+ Додати ключовий результат",
+    gcalBtn:"Додати в Google Calendar",
+    gcalNote:"Відкриває Google Calendar із заповненою щотижневою подією: понеділок, 9:00, починаючи з найближчого понеділка.",
+    gcalEmpty:"Спершу додайте хоча б один ключовий результат.",
+    gcalEventTitle:"щотижневий огляд наступних кроків",
+    gcalDetailsHead:"Ключові результати на наступні 1–3 місяці:"
   }
 };
 let LANG="en";
@@ -608,11 +660,14 @@ function blank(){
     hoshin:{objectives:[],initiatives:[],kpis:[],owners:[],
       cOI:{},cIK:{},cIO:{},cKO:{}},
     capabilities:[],stages:defaultStages(),
+    nextSteps:[],collapsed:{},
     snapshots:[]};
 }
 function normalize(){
   if(!Array.isArray(S.capabilities))S.capabilities=[];
   if(!Array.isArray(S.stages)||S.stages.length!==4)S.stages=defaultStages();
+  if(!Array.isArray(S.nextSteps))S.nextSteps=[];
+  if(!S.collapsed||typeof S.collapsed!=="object")S.collapsed={};
   if(!Array.isArray(S.players)||!S.players.length)S.players=seedPlayers();
   else if(!S.players.some(p=>p.isCompany))S.players[0].isCompany=true;
   S.scores=S.scores||{};S.tobe=S.tobe||{};
@@ -737,7 +792,7 @@ function renderBarriers(){
       h+="<tr><td><select data-act='bType' data-f='"+f.id+"' data-i='"+i+"'>"+
         MOAT_KEYS.map(m=>"<option value='"+m+"'"+(b.type===m?" selected":"")+">"+MOAT_LABELS[LANG][m]+"</option>").join("")+"</select></td>";
       h+="<td class='num'><input class='score' type='number' min='1' max='5' step='1' data-act='bStr' data-f='"+f.id+"' data-i='"+i+"' value='"+(b.strength||"")+"'></td>";
-      h+="<td><input data-act='bNote' data-f='"+f.id+"' data-i='"+i+"' value='"+esc(b.note||"")+"'></td>";
+      h+="<td><textarea rows='1' data-act='bNote' data-f='"+f.id+"' data-i='"+i+"'>"+esc(b.note||"")+"</textarea></td>";
       h+="<td class='num'><button class='cell-x' data-act='bDel' data-f='"+f.id+"' data-i='"+i+"'>×</button></td></tr>";
     });
     h+="</tbody></table><div class='addrow'><button data-act='bAdd' data-f='"+f.id+"'>"+t("addBarrier")+"</button></div></div>";
@@ -1102,6 +1157,74 @@ function renderStages(){
   tb.innerHTML=h;
 }
 
+/* ============================ Tool 9: next steps ============================ */
+function teamNames(){
+  const names=new Set();
+  Object.values(S.deploy||{}).forEach(f=>Object.values(f||{}).forEach(c=>{if(c&&c.owner)names.add(c.owner)}));
+  (S.hoshin&&S.hoshin.owners||[]).forEach(o=>{if(o)names.add(o)});
+  (S.nextSteps||[]).forEach(n=>{if(n.owner)names.add(n.owner)});
+  return [...names];
+}
+function renderNextSteps(){
+  const tb=document.getElementById("nextStepsTable");if(!tb)return;
+  let h="<thead><tr><th style='min-width:240px'>"+t("nsResult")+"</th><th style='min-width:150px'>"+t("nsOwner")+"</th><th style='width:30px'></th></tr></thead><tbody>";
+  if(!S.nextSteps.length){h+="<tr><td colspan='3' style='color:var(--faint);text-align:center;padding:16px'>"+t("nsEmpty")+"</td></tr>";}
+  S.nextSteps.forEach(n=>{
+    h+="<tr><td><input data-act='nsText' data-id='"+n.id+"' value='"+esc(n.text||"")+"' placeholder='"+t("nsResultPh")+"'></td>";
+    h+="<td><input data-act='nsOwner' data-id='"+n.id+"' value='"+esc(n.owner||"")+"' list='teamList' placeholder='"+t("nsOwnerPh")+"'></td>";
+    h+="<td class='num'><button class='cell-x' data-act='nsDel' data-id='"+n.id+"'>×</button></td></tr>";
+  });
+  h+="</tbody>";
+  tb.innerHTML=h;
+  let dl=document.getElementById("teamList");
+  if(!dl){dl=document.createElement("datalist");dl.id="teamList";document.body.appendChild(dl)}
+  dl.innerHTML=teamNames().map(n=>"<option value='"+esc(n)+"'>").join("");
+}
+function nextMonday9(){
+  const d=new Date();const day=d.getDay();const add=(1-day+7)%7;
+  d.setDate(d.getDate()+add);d.setHours(9,0,0,0);return d;
+}
+function gcalFmt(d){const p=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"T"+p(d.getHours())+p(d.getMinutes())+"00";}
+function buildGcalUrl(){
+  const items=S.nextSteps.filter(n=>n.text&&n.text.trim());
+  if(!items.length)return null;
+  const start=nextMonday9();const end=new Date(start.getTime()+30*60000);
+  const tz=(Intl.DateTimeFormat().resolvedOptions().timeZone)||"UTC";
+  const co=resolveCompanyName();
+  const title=(co?co+" — ":"")+t("gcalEventTitle");
+  const details=t("gcalDetailsHead")+"\n"+items.map(n=>"• "+n.text+(n.owner?"  ("+n.owner+")":"")).join("\n");
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE"+
+    "&text="+encodeURIComponent(title)+
+    "&dates="+gcalFmt(start)+"/"+gcalFmt(end)+
+    "&ctz="+encodeURIComponent(tz)+
+    "&recur="+encodeURIComponent("RRULE:FREQ=WEEKLY;BYDAY=MO")+
+    "&details="+encodeURIComponent(details);
+}
+
+/* ============================ Collapsible sections ============================ */
+function applyCollapse(sec){
+  const on=!!(S.collapsed&&S.collapsed[sec.id]);
+  sec.classList.toggle("collapsed",on);
+  const btn=sec.querySelector(".collapse-btn");if(btn)btn.textContent="▾";
+}
+function applyCollapseAll(){document.querySelectorAll("section.tool").forEach(applyCollapse);}
+function initCollapsibles(){
+  document.querySelectorAll("section.tool").forEach(sec=>{
+    const head=sec.querySelector(".sec-head");if(!head||head.querySelector(".collapse-btn"))return;
+    const btn=document.createElement("button");btn.type="button";btn.className="collapse-btn";btn.textContent="▾";
+    btn.setAttribute("aria-label","toggle section");
+    head.appendChild(btn);
+    head.addEventListener("click",e=>{
+      if(e.target.closest("input,select,textarea,a"))return;
+      S.collapsed[sec.id]=!S.collapsed[sec.id];
+      applyCollapse(sec);save();
+      if(!S.collapsed[sec.id]){setTimeout(()=>{Object.values(charts).forEach(c=>{try{c.resize()}catch(_){}});autosizeAll();},20);}
+    });
+    applyCollapse(sec);
+  });
+}
+
 /* ============================ Render all ============================ */
 function renderAll(){
   document.getElementById("metaCompany").value=S.meta.company||"";
@@ -1113,6 +1236,8 @@ function renderAll(){
   renderDeploy();
   renderCapabilities();renderStages();
   renderSnapshots();
+  renderNextSteps();
+  applyCollapseAll();
 }
 function refreshCharts(){renderCanvasChart();renderTobeChart();renderPmsNow();renderPmsFut()}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
@@ -1131,7 +1256,7 @@ function autosizeEl(el){
   const w=_measureEl.offsetWidth+pad+10;
   el.style.width=Math.max(64,Math.min(480,w))+"px";
 }
-const AUTOSIZE_SEL=".tbl input:not([type=number]), #stageTable textarea";
+const AUTOSIZE_SEL=".tbl input:not([type=number]), .tbl textarea";
 function autosizeAll(){document.querySelectorAll(AUTOSIZE_SEL).forEach(autosizeEl);}
 
 /* ============================ Events ============================ */
@@ -1146,6 +1271,8 @@ document.addEventListener("input",e=>{
     case "capTobe":{const x=find(S.capabilities,d.id);if(x)x.tobe=val;break}
     case "capPrio":{const x=find(S.capabilities,d.id);if(x)x.priority=val;renderCapKpis();break}
     case "stEdit":{S.stages[+d.i][d.field]=val;break}
+    case "nsText":{const n=find(S.nextSteps,d.id);if(n)n.text=val;break}
+    case "nsOwner":{const n=find(S.nextSteps,d.id);if(n)n.owner=val;break}
     case "score":{S.scores[d.f]=S.scores[d.f]||{};S.scores[d.f][d.p]=val===""?null:clamp(val,0,10);renderCanvasChart();renderTobeTable();renderTobeChart();break}
     case "errc":{S.errc[d.id]=val;renderErrc();renderTobeTable();renderBarriers();renderDeploy();break}
     case "tobe":{S.tobe[d.id]=val===""?null:clamp(val,0,10);
@@ -1194,6 +1321,7 @@ document.addEventListener("click",e=>{
     case "snapDel":{S.snapshots.splice(+d.i,1);renderSnapshots();save();break}
     case "capAdd":{S.capabilities.push({id:uid("c"),cat:d.cat,name:"",existing:"",tobe:"",priority:"med"});renderCapabilities();save();break}
     case "capDel":{S.capabilities=S.capabilities.filter(x=>x.id!==d.id);renderCapabilities();save();break}
+    case "nsDel":{S.nextSteps=S.nextSteps.filter(x=>x.id!==d.id);renderNextSteps();save();break}
   }
 });
 document.getElementById("addFactor").onclick=()=>{
@@ -1207,6 +1335,12 @@ document.getElementById("addProduct").onclick=()=>{S.products.push({id:uid("pr")
 document.getElementById("addFutureProduct").onclick=()=>{const cn=resolveCompanyName();if(!S.meta.company)S.meta.company=cn;S.products.push({id:uid("pr"),name:(LANG==="ua"?"Продукт":"Product"),company:cn,smpNow:50,shareNow:10,revNow:100,smpFut:65,shareFut:15,revFut:140});document.getElementById("metaCompany").value=S.meta.company||"";renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();save()};
 document.getElementById("addUnit").onclick=()=>{S.units.push({id:uid("u"),name:(LANG==="ua"?"Підрозділ":"Unit")});renderDeployMatrix();save()};
 document.getElementById("btnSnap").onclick=takeSnapshot;
+document.getElementById("addNextStep").onclick=()=>{S.nextSteps.push({id:uid("ns"),text:"",owner:""});renderNextSteps();save()};
+document.getElementById("btnGcal").onclick=()=>{
+  const url=buildGcalUrl();
+  if(!url){alert(t("gcalEmpty"));return;}
+  window.open(url,"_blank","noopener");
+};
 
 document.querySelectorAll("#deploySeg button").forEach(btn=>btn.onclick=()=>{S.deployMode=btn.dataset.mode;renderDeploy();save()});
 
@@ -1244,7 +1378,7 @@ document.getElementById("btnPdf").onclick=()=>{window.print()};
 document.getElementById("btnExample").onclick=loadExample;
 
 /* nav active state on scroll */
-const secs=["tool1","tool2","tool3","tool4","tool5","tool6","tool7","tool8"];
+const secs=["tool1","tool2","tool3","tool4","tool5","tool6","tool7","tool8","tool9"];
 const obs=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){
   document.querySelectorAll(".navitem").forEach(n=>n.classList.toggle("active",n.getAttribute("href")==="#"+en.target.id))}})},{rootMargin:"-30% 0px -60% 0px"});
 secs.forEach(id=>obs.observe(document.getElementById(id)));
@@ -1373,6 +1507,15 @@ function loadExample(){
     gtm:["Fast base growth at the strategic price","Win the mass segment","Referrals, partnerships, marketing","CAC in band, activation ≥X%"]
   };
   S.stages.forEach(s=>{const v=stg[s.key];if(v){s.focus=v[0];s.objectives=v[1];s.activities=v[2];s.kpi=v[3]}});
+  S.nextSteps=ua?[
+    {id:uid("ns"),text:"Підняти NPS застосунку до ≥70",owner:"Head of App"},
+    {id:uid("ns"),text:"Скоротити онбординг ФОП до <2 хв",owner:"Head of SME"},
+    {id:uid("ns"),text:"Запустити гейміфікацію 2.0 у пілоті",owner:"CMO"}
+  ]:[
+    {id:uid("ns"),text:"Lift app NPS to ≥70",owner:"Head of App"},
+    {id:uid("ns"),text:"Cut FOP onboarding to <2 min",owner:"Head of SME"},
+    {id:uid("ns"),text:"Ship Gamification 2.0 to pilot",owner:"CMO"}
+  ];
   // baseline snapshot
   S.snapshots=[];
   LANG=S.meta.lang;
@@ -1393,10 +1536,11 @@ function takeSnapshotSilent(lbl){const m=computeMetrics();S.snapshots.push({date
   }
   document.getElementById("langEN").classList.toggle("on",LANG==="en");
   document.getElementById("langUA").classList.toggle("on",LANG==="ua");
-  var BUILD="build 2026-06-16i";
+  var BUILD="build 2026-06-16m";
   document.getElementById("verTag").textContent=BUILD;
   console.log("Blue Ocean Workbench — "+BUILD);
   renderAll();
+  initCollapsibles();
   try{
     const _m=document.querySelector("main");
     const _obs=new MutationObserver(()=>{clearTimeout(window.__asT);window.__asT=setTimeout(autosizeAll,30)});
