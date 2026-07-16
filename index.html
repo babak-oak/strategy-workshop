@@ -213,6 +213,16 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
 .print-head{display:none;margin-bottom:18px}
 .print-head h1{font-size:22px}
 .print-head .pm{color:var(--muted);font-size:12px;margin-top:4px}
+
+/* --- per-line colour + pattern controls, editable labels (16m) --- */
+.tbl th .pcolor{width:22px;height:16px;border:1px solid var(--line);border-radius:3px;background:none;padding:0;margin-right:6px;vertical-align:middle;cursor:pointer}
+.tbl th .pcolor::-webkit-color-swatch-wrapper{padding:0}
+.tbl th .pcolor::-webkit-color-swatch{border:none;border-radius:2px}
+.tbl th .pdash{width:auto;font-size:11px;padding:1px 2px;margin-left:5px;vertical-align:middle;min-width:38px}
+.editlabel{cursor:text;border-radius:4px;transition:.12s;padding:1px 3px;margin:-1px -3px}
+.editlabel:hover{box-shadow:inset 0 -2px 0 var(--ocean-soft)}
+.editlabel:focus{outline:none;box-shadow:inset 0 -2px 0 var(--ocean);background:#f5fafd}
+@media print{.editlabel:hover,.editlabel:focus{box-shadow:none;background:none}.tbl th .pcolor,.tbl th .pdash{display:none}}
 </style>
 </head>
 <body>
@@ -251,13 +261,15 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
     </div>
     <a class="navitem" href="#tool1"><span class="n">01</span><span class="lbl" data-i18n="nav1">Value proposition — as-is</span></a>
     <a class="navitem" href="#tool2"><span class="n">02</span><span class="lbl" data-i18n="nav2">To-be & barriers</span></a>
-    <a class="navitem" href="#tool3"><span class="n">03</span><span class="lbl" data-i18n="nav3">Portfolio map — current</span></a>
-    <a class="navitem" href="#tool4"><span class="n">04</span><span class="lbl" data-i18n="nav4">Portfolio map — future</span></a>
-    <a class="navitem" href="#tool5"><span class="n">05</span><span class="lbl" data-i18n="nav5">Value deployment</span></a>
-    <a class="navitem" href="#tool6"><span class="n">06</span><span class="lbl" data-i18n="nav6">Capabilities & resources</span></a>
-    <a class="navitem" href="#tool7"><span class="n">07</span><span class="lbl" data-i18n="nav7">Product stages</span></a>
-    <a class="navitem" href="#tool8"><span class="n">08</span><span class="lbl" data-i18n="nav8">Measurement</span></a>
-    <a class="navitem" href="#tool9"><span class="n">09</span><span class="lbl" data-i18n="nav9">Next steps</span></a>
+    <a class="navitem" href="#toolProfit"><span class="n">03</span><span class="lbl" data-i18n="navProfit">Profit proposition</span></a>
+    <a class="navitem" href="#toolPeople"><span class="n">04</span><span class="lbl" data-i18n="navPeople">People proposition</span></a>
+    <a class="navitem" href="#tool3"><span class="n">05</span><span class="lbl" data-i18n="nav3">Portfolio map — current</span></a>
+    <a class="navitem" href="#tool4"><span class="n">06</span><span class="lbl" data-i18n="nav4">Portfolio map — future</span></a>
+    <a class="navitem" href="#tool5"><span class="n">07</span><span class="lbl" data-i18n="nav5">Value deployment</span></a>
+    <a class="navitem" href="#tool6"><span class="n">08</span><span class="lbl" data-i18n="nav6">Capabilities & resources</span></a>
+    <a class="navitem" href="#tool7"><span class="n">09</span><span class="lbl" data-i18n="nav7">Product stages</span></a>
+    <a class="navitem" href="#tool8"><span class="n">10</span><span class="lbl" data-i18n="nav8">Measurement</span></a>
+    <a class="navitem" href="#tool9"><span class="n">11</span><span class="lbl" data-i18n="nav9">Next steps</span></a>
   </aside>
 
   <main class="col">
@@ -318,10 +330,72 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
     </section>
 
-    <!-- 03 -->
-    <section class="tool" id="tool3">
+    <!-- 03 Profit proposition -->
+    <section class="tool" id="toolProfit">
       <div class="sec-head">
         <div class="step">03</div>
+        <div><h2 data-i18n="profitTitle">Profit proposition — how you capture value</h2>
+        <div class="desc" data-i18n="profitDesc">Score every profit-model factor 0–10 for your company and each peer — how you make money, not what you offer. The canvas draws the profit curves; classify each factor in the ERRC grid.</div></div>
+      </div>
+      <div class="sec-body">
+        <p class="hint" data-i18n="profitHint">Rows = profit-model factors (pricing, cost structure, revenue streams). Columns = players — edit a competitor's name in its header.</p>
+        <div class="cin" style="overflow-x:auto"><table class="tbl" id="profitTable"></table></div>
+        <div class="addrow cin">
+          <button data-act="propAddFactor" data-k="profit" data-i18n="addFactor">+ Add factor</button>
+          <button data-act="propAddPlayer" data-k="profit" data-i18n="addPlayer">+ Add player</button>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-box tall"><canvas id="profitCanvas"></canvas></div>
+          <div class="legend" id="profitLegend"></div>
+          <div class="foot-notes" id="profitNotes"></div>
+        </div>
+        <h3 style="margin:24px 0 0;font-size:15px" data-i18n="errcTitle">ERRC grid</h3>
+        <p class="hint" data-i18n="propErrcHint">Assign each factor: Eliminate, Reduce, Raise or Create — the moves that reshape this proposition.</p>
+        <div class="errc" id="profitErrc"></div>
+        <h3 style="margin:24px 0 0;font-size:15px" data-i18n="profitTobeTitle">To-be profit proposition</h3>
+        <p class="hint" data-i18n="tobeHintGeneric">The dashed line is your to-be curve; the solid line your current curve; the muted line is the peer average.</p>
+        <div class="cin" style="overflow-x:auto"><table class="tbl" id="profitTobeTable"></table></div>
+        <div class="chart-wrap">
+          <div class="chart-box tall"><canvas id="profitTobeCanvas"></canvas></div>
+          <div class="foot-notes" id="profitTobeNotes"></div>
+        </div>
+      </div>
+    </section>
+    <!-- 04 People proposition -->
+    <section class="tool" id="toolPeople">
+      <div class="sec-head">
+        <div class="step">04</div>
+        <div><h2 data-i18n="peopleTitle">People proposition — how you engage those who deliver value</h2>
+        <div class="desc" data-i18n="peopleDesc">Score every people-model factor 0–10 for your company and each peer — how you motivate and enable staff and partners. The canvas draws the people curves; classify each factor in the ERRC grid.</div></div>
+      </div>
+      <div class="sec-body">
+        <p class="hint" data-i18n="peopleHint">Rows = people-model factors (incentives, autonomy, skills, culture). Columns = players.</p>
+        <div class="cin" style="overflow-x:auto"><table class="tbl" id="peopleTable"></table></div>
+        <div class="addrow cin">
+          <button data-act="propAddFactor" data-k="people" data-i18n="addFactor">+ Add factor</button>
+          <button data-act="propAddPlayer" data-k="people" data-i18n="addPlayer">+ Add player</button>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-box tall"><canvas id="peopleCanvas"></canvas></div>
+          <div class="legend" id="peopleLegend"></div>
+          <div class="foot-notes" id="peopleNotes"></div>
+        </div>
+        <h3 style="margin:24px 0 0;font-size:15px" data-i18n="errcTitle">ERRC grid</h3>
+        <p class="hint" data-i18n="propErrcHint">Assign each factor: Eliminate, Reduce, Raise or Create — the moves that reshape this proposition.</p>
+        <div class="errc" id="peopleErrc"></div>
+        <h3 style="margin:24px 0 0;font-size:15px" data-i18n="peopleTobeTitle">To-be people proposition</h3>
+        <p class="hint" data-i18n="tobeHintGeneric">The dashed line is your to-be curve; the solid line your current curve; the muted line is the peer average.</p>
+        <div class="cin" style="overflow-x:auto"><table class="tbl" id="peopleTobeTable"></table></div>
+        <div class="chart-wrap">
+          <div class="chart-box tall"><canvas id="peopleTobeCanvas"></canvas></div>
+          <div class="foot-notes" id="peopleTobeNotes"></div>
+        </div>
+      </div>
+    </section>
+    <!-- 05 -->
+    <section class="tool" id="tool3">
+      <div class="sec-head">
+        <div class="step">05</div>
         <div><h2 data-i18n="t3title">Portfolio map — current (incl. peers)</h2>
         <div class="desc" data-i18n="t3desc">Pioneer–Migrator–Settler map of every product in the market. X = value-innovation level, Y = market/revenue share, bubble size = revenue.</div></div>
       </div>
@@ -342,10 +416,10 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
     </section>
 
-    <!-- 04 -->
+    <!-- 06 -->
     <section class="tool" id="tool4">
       <div class="sec-head">
-        <div class="step">04</div>
+        <div class="step">06</div>
         <div><h2 data-i18n="t4title">Portfolio map — future (company only)</h2>
         <div class="desc" data-i18n="t4desc">Set the target position for each of your products. Arrows show the intended migration from today toward the pioneer zone.</div></div>
       </div>
@@ -360,10 +434,10 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
     </section>
 
-    <!-- 05 -->
+    <!-- 07 -->
     <section class="tool" id="tool5">
       <div class="sec-head">
-        <div class="step">05</div>
+        <div class="step">07</div>
         <div><h2 data-i18n="t5title">Value deployment — focus the organisation</h2>
         <div class="desc" data-i18n="t5desc">Tie each Raise/Create value factor to the parts of the company that must deliver it. Choose a simple deployment matrix or a full Hoshin Kanri X-matrix.</div></div>
       </div>
@@ -390,10 +464,10 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
     </section>
 
-    <!-- 06 Capabilities -->
+    <!-- 08 Capabilities -->
     <section class="tool" id="tool6">
       <div class="sec-head">
-        <div class="step">06</div>
+        <div class="step">08</div>
         <div><h2 data-i18n="capTitle">Capabilities & resources — existing vs to-be</h2>
         <div class="desc" data-i18n="capDesc">Audit what you have today versus what the to-be value proposition demands, split into People, Technology, Assets and Processes.</div></div>
       </div>
@@ -408,10 +482,10 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
     </section>
 
-    <!-- 07 Product stages -->
+    <!-- 09 Product stages -->
     <section class="tool" id="tool7">
       <div class="sec-head">
-        <div class="step">07</div>
+        <div class="step">09</div>
         <div><h2 data-i18n="stageTitle">Product-owner focus by stage</h2>
         <div class="desc" data-i18n="stageDesc">For each stage of the product journey, set where the product owner should focus, the objectives, the key activities and the exit KPI.</div></div>
       </div>
@@ -421,10 +495,10 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
     </section>
 
-    <!-- 08 -->
+    <!-- 10 -->
     <section class="tool" id="tool8">
       <div class="sec-head">
-        <div class="step">08</div>
+        <div class="step">10</div>
         <div><h2 data-i18n="t8title">Measurement — track the move over time</h2>
         <div class="desc" data-i18n="t8desc">Take a dated snapshot of the whole workbench. The dashboard shows how your value lead, portfolio migration, barriers and deployment evolve.</div></div>
       </div>
@@ -445,10 +519,10 @@ tr.drag-over td{box-shadow:inset 0 2px 0 var(--ocean)}
       </div>
     </section>
 
-    <!-- 09 Next steps -->
+    <!-- 11 Next steps -->
     <section class="tool" id="tool9">
       <div class="sec-head">
-        <div class="step">09</div>
+        <div class="step">11</div>
         <div><h2 data-i18n="nsTitle">Next steps</h2>
         <div class="desc" data-i18n="nsDesc">List the key results you want to reach in the next 1–3 months, assign each to an existing or prospective team member, then push them to a weekly Google Calendar review.</div></div>
       </div>
@@ -546,6 +620,18 @@ const I18N={
     gcalNote:"Opens Google Calendar pre-filled with a weekly event, Mondays at 9:00, starting the next Monday.",
     gcalEmpty:"Add at least one key result first.",
     gcalEventTitle:"weekly next-steps review",
+    navProfit:"Profit proposition",
+    navPeople:"People proposition",
+    profitTitle:"Profit proposition — how you capture value",
+    profitDesc:"Score every profit-model factor 0–10 for your company and each peer — how you make money, not what you offer. The canvas draws the profit curves; classify each factor in the ERRC grid.",
+    profitHint:"Rows = profit-model factors (pricing, cost structure, revenue streams). Columns = players — edit a competitor's name in its header.",
+    profitTobeTitle:"To-be profit proposition",
+    peopleTitle:"People proposition — how you engage those who deliver value",
+    peopleDesc:"Score every people-model factor 0–10 for your company and each peer — how you motivate and enable staff and partners. The canvas draws the people curves; classify each factor in the ERRC grid.",
+    peopleHint:"Rows = people-model factors (incentives, autonomy, skills, culture). Columns = players.",
+    peopleTobeTitle:"To-be people proposition",
+    propErrcHint:"Assign each factor: Eliminate, Reduce, Raise or Create — the moves that reshape this proposition.",
+    tobeHintGeneric:"The dashed line is your to-be curve; the solid line your current curve; the muted line is the peer average.",
     gcalDetailsHead:"Key results for the next 1–3 months:"
   },
   ua:{
@@ -625,6 +711,18 @@ const I18N={
     gcalNote:"Відкриває Google Calendar із заповненою щотижневою подією: понеділок, 9:00, починаючи з найближчого понеділка.",
     gcalEmpty:"Спершу додайте хоча б один ключовий результат.",
     gcalEventTitle:"щотижневий огляд наступних кроків",
+    navProfit:"Пропозиція прибутку",
+    navPeople:"Пропозиція для людей",
+    profitTitle:"Пропозиція прибутку — як ви привласнюєте цінність",
+    profitDesc:"Оцініть кожен фактор моделі прибутку 0–10 для вашої компанії та кожного конкурента — як ви заробляєте, а не що пропонуєте. Полотно будує криві прибутку; класифікуйте кожен фактор у сітці ERRC.",
+    profitHint:"Рядки — фактори моделі прибутку (ціноутворення, структура витрат, потоки доходу). Колонки — гравці: назву конкурента можна редагувати в заголовку.",
+    profitTobeTitle:"Цільова пропозиція прибутку",
+    peopleTitle:"Пропозиція для людей — як ви залучаєте тих, хто створює цінність",
+    peopleDesc:"Оцініть кожен фактор моделі людей 0–10 для вашої компанії та кожного конкурента — як ви мотивуєте й уможливлюєте працівників і партнерів. Полотно будує криві; класифікуйте кожен фактор у сітці ERRC.",
+    peopleHint:"Рядки — фактори моделі людей (стимули, автономія, навички, культура). Колонки — гравці.",
+    peopleTobeTitle:"Цільова пропозиція для людей",
+    propErrcHint:"Призначте кожен фактор: Усунути, Зменшити, Підвищити або Створити — рухи, що переформовують цю пропозицію.",
+    tobeHintGeneric:"Пунктир — ваша цільова крива; суцільна — поточна; приглушена — середнє по конкурентах.",
     gcalDetailsHead:"Ключові результати на наступні 1–3 місяці:"
   }
 };
@@ -646,13 +744,17 @@ let S=blank();
 let charts={};
 function uid(p){return p+Math.random().toString(36).slice(2,8)}
 function seedPlayers(){return [
-  {id:uid("p"),name:(LANG==="ua"?"Моя компанія":"My company"),isCompany:true,color:"#0B6FA4"},
-  {id:uid("p"),name:(LANG==="ua"?"Конкурент 1":"Competitor 1"),isCompany:false,color:"#C8472E"}];}
+  {id:uid("p"),name:(LANG==="ua"?"Моя компанія":"My company"),isCompany:true,color:"#0B6FA4",dash:false},
+  {id:uid("p"),name:(LANG==="ua"?"Конкурент 1":"Competitor 1"),isCompany:false,color:"#C8472E",dash:false}];}
 function defaultStages(){return [
   {key:"refine",focus:"",objectives:"",activities:"",kpi:""},
   {key:"develop",focus:"",objectives:"",activities:"",kpi:""},
   {key:"deploy",focus:"",objectives:"",activities:"",kpi:""},
   {key:"gtm",focus:"",objectives:"",activities:"",kpi:""}];}
+function seedPropPlayers(){return [
+  {id:uid("p"),name:(LANG==="ua"?"Моя компанія":"My company"),isCompany:true,color:"#0B6FA4",dash:false},
+  {id:uid("p"),name:(LANG==="ua"?"Конкурент 1":"Competitor 1"),isCompany:false,color:"#C8472E",dash:false}];}
+function blankProp(){return {factors:[],players:seedPropPlayers(),scores:{},tobe:{},errc:{}};}
 function blank(){
   return {meta:{company:"",market:"",lang:"en"},
     factors:[],players:seedPlayers(),scores:{},tobe:{},errc:{},barriers:{},
@@ -661,6 +763,7 @@ function blank(){
       cOI:{},cIK:{},cIO:{},cKO:{}},
     capabilities:[],stages:defaultStages(),
     nextSteps:[],collapsed:{},
+    labels:{},props:{profit:blankProp(),people:blankProp()},
     snapshots:[]};
 }
 function normalize(){
@@ -670,12 +773,24 @@ function normalize(){
   if(!S.collapsed||typeof S.collapsed!=="object")S.collapsed={};
   if(!Array.isArray(S.players)||!S.players.length)S.players=seedPlayers();
   else if(!S.players.some(p=>p.isCompany))S.players[0].isCompany=true;
+  S.players.forEach((p,i)=>{if(!p.color)p.color=(p.isCompany?"#0B6FA4":PEER_COLORS[i%PEER_COLORS.length]);if(typeof p.dash!=="boolean")p.dash=false;});
+  if(!S.labels||typeof S.labels!=="object")S.labels={};
   S.scores=S.scores||{};S.tobe=S.tobe||{};
   (S.factors||[]).forEach(f=>{
     if(f.note==null)f.note="";
     S.scores[f.id]=S.scores[f.id]||{};
     S.players.forEach(p=>{if(!(p.id in S.scores[f.id]))S.scores[f.id][p.id]=5});
     if(!(f.id in S.tobe))S.tobe[f.id]=5;
+  });
+  if(!S.props||typeof S.props!=="object")S.props={};
+  ["profit","people"].forEach(k=>{
+    let P=S.props[k]; if(!P||typeof P!=="object"){P=blankProp();S.props[k]=P;}
+    if(!Array.isArray(P.factors))P.factors=[];
+    if(!Array.isArray(P.players)||!P.players.length)P.players=seedPropPlayers();
+    else if(!P.players.some(p=>p.isCompany))P.players[0].isCompany=true;
+    P.players.forEach((p,i)=>{if(!p.color)p.color=(p.isCompany?"#0B6FA4":PEER_COLORS[i%PEER_COLORS.length]);if(typeof p.dash!=="boolean")p.dash=false;});
+    P.scores=P.scores||{};P.tobe=P.tobe||{};P.errc=P.errc||{};
+    P.factors.forEach(f=>{if(f.note==null)f.note="";P.scores[f.id]=P.scores[f.id]||{};P.players.forEach(p=>{if(!(p.id in P.scores[f.id]))P.scores[f.id][p.id]=5});if(!(f.id in P.tobe))P.tobe[f.id]=5;});
   });
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -688,7 +803,7 @@ function resolveCompanyName(){return (S.meta.company&&S.meta.company.trim())||(c
 
 /* ============================ Render: setup + i18n ============================ */
 function applyI18n(){
-  document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.getAttribute("data-i18n"))});
+  document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.getAttribute("data-i18n");el.textContent=(S.labels&&S.labels[k]!=null)?S.labels[k]:t(k)});
   document.documentElement.lang=LANG;
   document.getElementById("metaCompany").placeholder=t("companyName");
   document.getElementById("metaMarket").placeholder=t("marketName");
@@ -703,9 +818,11 @@ let dragFid=null;
 function renderCanvasTable(){
   const tb=document.getElementById("canvasTable");
   let h="<thead><tr><th class='drag-h'></th><th style='min-width:150px'>"+t("factor")+"</th>";
-  S.players.forEach(p=>{h+="<th class='num'><span class='swatch' style='background:"+p.color+"'></span>"+
+  S.players.forEach(p=>{h+="<th class='num'><input class='pcolor' type='color' data-act='playerColor' data-id='"+p.id+"' value='"+p.color+"' title='line colour'>"+
     "<input class='player-name' data-act='playerName' data-id='"+p.id+"' value='"+esc(p.name)+"'>"+
-    "<button class='cell-x' data-act='delPlayer' data-id='"+p.id+"'>×</button></th>"});
+    "<button class='cell-x' data-act='delPlayer' data-id='"+p.id+"'>×</button>"+
+    "<select class='pdash' data-act='playerDash' data-id='"+p.id+"' title='line pattern'><option value='solid'"+(p.dash?"":" selected")+">\u2500\u2500</option><option value='dashed'"+(p.dash?" selected":"")+">\u2013 \u2013</option></select>"+
+    "</th>"});
   h+="<th class='num'>"+t("classification")+"</th></tr></thead><tbody>";
   S.factors.forEach(f=>{
     h+="<tr draggable='true' data-fid='"+f.id+"'>";
@@ -948,6 +1065,31 @@ function renderHoshin(){
 }
 
 /* ============================ Charts ============================ */
+const ERRC_FILL={eliminate:"rgba(11,111,164,.05)",reduce:"rgba(11,111,164,.11)",raise:"rgba(11,111,164,.18)",create:"rgba(11,111,164,.27)"};
+const errcBand={id:"errcBand",beforeDraw(c,_a,opts){
+  const src=opts&&opts.factors?opts:(c.config._errc||null); if(!src||!src.factors||!src.factors.length)return;
+  const{ctx,chartArea,scales}=c; const x=scales.x; if(!x||!chartArea)return;
+  const n=src.factors.length;
+  const px=i=>{try{return x.getPixelForValue(i)}catch(e){return x.getPixelForTick?x.getPixelForTick(i):null}};
+  const edge=i=>{ if(i<=0)return chartArea.left; if(i>=n)return chartArea.right;
+    const a=px(i-1),b=px(i); return (a==null||b==null)?chartArea.left+(chartArea.right-chartArea.left)*i/n:(a+b)/2; };
+  ctx.save();
+  for(let i=0;i<n;i++){const cat=src.errc[src.factors[i].id];const col=ERRC_FILL[cat];if(!col)continue;
+    const l=edge(i),r=edge(i+1);ctx.fillStyle=col;ctx.fillRect(l,chartArea.top,r-l,chartArea.bottom-chartArea.top);}
+  ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="rgba(11,111,164,.15)";
+  const midY=chartArea.top+(chartArea.bottom-chartArea.top)/2;
+  let i=0;
+  while(i<n){const cat=src.errc[src.factors[i].id];
+    if(!ERRC_FILL[cat]){i++;continue;}
+    let j=i;while(j+1<n&&src.errc[src.factors[j+1].id]===cat)j++;
+    const l=edge(i),r=edge(j+1),cx=(l+r)/2,w=r-l,label=t(cat).toUpperCase();
+    const fs=Math.max(11,Math.min(22,w/Math.max(4,label.length*0.62)));
+    ctx.font="700 "+fs+"px 'Space Grotesk','IBM Plex Mono',sans-serif";
+    ctx.fillText(label,cx,midY);
+    i=j+1;
+  }
+  ctx.restore();
+}};
 const band={id:"band",beforeDraw(c){const{ctx,chartArea,scales}=c;if(!chartArea||!scales.x)return;
   const zones=[[0,33,"rgba(174,183,189,.14)"],[33,67,"rgba(81,147,180,.12)"],[67,100,"rgba(11,111,164,.12)"]];
   ctx.save();
@@ -976,40 +1118,46 @@ function lineDatasets(useTobe){
   const c=companyPlayer();
   if(useTobe){
     if(c){ds.push({label:t("yourNow"),data:S.factors.map(f=>(S.scores[f.id]&&S.scores[f.id][c.id]!=null)?+S.scores[f.id][c.id]:null),
-      borderColor:"#0B6FA4",backgroundColor:"#0B6FA4",borderWidth:2.5,tension:.25,pointRadius:3,spanGaps:true});}
+      borderColor:c.color,backgroundColor:c.color,borderDash:c.dash?[6,4]:undefined,borderWidth:2.5,tension:.25,pointRadius:3,spanGaps:true});}
     ds.push({label:t("yourTobe"),data:S.factors.map(f=>S.tobe[f.id]!=null?+S.tobe[f.id]:null),
-      borderColor:"#0B6FA4",backgroundColor:"#0B6FA4",borderWidth:2.5,borderDash:[6,4],tension:.25,pointRadius:3,spanGaps:true});
+      borderColor:(c?c.color:"#0B6FA4"),backgroundColor:(c?c.color:"#0B6FA4"),borderWidth:2.5,borderDash:[6,4],tension:.25,pointRadius:3,spanGaps:true});
     const peers=peerPlayers();
     if(peers.length){const avg=S.factors.map(f=>{const vs=peers.map(p=>(S.scores[f.id]&&S.scores[f.id][p.id]!=null)?+S.scores[f.id][p.id]:null).filter(v=>v!=null);return vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:null});
       ds.push({label:t("peerAvg"),data:avg,borderColor:"#C8472E",backgroundColor:"#C8472E",borderWidth:1.5,tension:.25,pointRadius:2,spanGaps:true,borderDash:[2,2]});}
   }else{
     S.players.forEach(p=>{ds.push({label:p.name,data:S.factors.map(f=>(S.scores[f.id]&&S.scores[f.id][p.id]!=null)?+S.scores[f.id][p.id]:null),
-      borderColor:p.color,backgroundColor:p.color,borderWidth:p.isCompany?3:1.8,tension:.25,pointRadius:p.isCompany?4:3,spanGaps:true});});
+      borderColor:p.color,backgroundColor:p.color,borderDash:p.dash?[6,4]:undefined,borderWidth:p.isCompany?3:1.8,tension:.25,pointRadius:p.isCompany?4:3,spanGaps:true});});
   }
   return {labels,ds};
 }
 function renderCanvasChart(){
   const {labels,ds}=lineDatasets(false);
   destroy("canvas");
-  charts.canvas=new Chart(document.getElementById("chartCanvas"),{type:"line",
+  const _cfg={type:"line",
+    _errc:{factors:S.factors,errc:S.errc},
+    plugins:[errcBand],
     data:{labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,
       scales:{y:{min:0,max:10,title:{display:true,text:LANG==="ua"?"Рівень пропозиції":"Offering level"}},
         x:{ticks:{maxRotation:38,minRotation:0,autoSkip:false,font:{size:10}}}},
-      plugins:{legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}},
-        tooltip:{callbacks:{afterBody:items=>{const f=S.factors[items[0].dataIndex];return (f&&f.note)?["",f.note]:[]}}}}}});
+      plugins:{errcBand:{factors:S.factors,errc:S.errc},legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}},
+        tooltip:{callbacks:{afterBody:items=>{const f=S.factors[items[0].dataIndex];return (f&&f.note)?["",f.note]:[]}}}}}};
+  charts.canvas=new Chart(document.getElementById("chartCanvas"),_cfg);
   legendInto("canvasLegend",S.players.map(p=>({c:p.color,l:p.name,line:true})));
   renderNotes("canvasNotes");
 }
 function renderTobeChart(){
   const {labels,ds}=lineDatasets(true);
   destroy("tobe");
-  charts.tobe=new Chart(document.getElementById("chartTobe"),{type:"line",
+  const _cfg={type:"line",
+    _errc:{factors:S.factors,errc:S.errc},
+    plugins:[errcBand],
     data:{labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,
       scales:{y:{min:0,max:10},x:{ticks:{maxRotation:38,autoSkip:false,font:{size:10}}}},
-      plugins:{legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}},
-        tooltip:{callbacks:{afterBody:items=>{const f=S.factors[items[0].dataIndex];return (f&&f.note)?["",f.note]:[]}}}}}});
+      plugins:{errcBand:{factors:S.factors,errc:S.errc},legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}},
+        tooltip:{callbacks:{afterBody:items=>{const f=S.factors[items[0].dataIndex];return (f&&f.note)?["",f.note]:[]}}}}}};
+  charts.tobe=new Chart(document.getElementById("chartTobe"),_cfg);
   renderNotes("tobeNotes");
 }
 function pmsBubbles(products,outlineMine){
@@ -1232,6 +1380,7 @@ function renderAll(){
   applyI18n();
   renderCanvasTable();renderErrc();renderCanvasChart();
   renderTobeTable();renderBarriers();renderTobeChart();
+  renderPropsAll();
   renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();
   renderDeploy();
   renderCapabilities();renderStages();
@@ -1280,6 +1429,17 @@ document.addEventListener("input",e=>{
       if(row){const c=companyPlayer();const now=(c&&S.scores[d.id]&&S.scores[d.id][c.id]!=null)?+S.scores[d.id][c.id]:null;const tb=S.tobe[d.id];const up=(now!=null&&tb!=null)?(tb-now):null;const cell=row.lastElementChild;cell.className="num mono "+(up>0?"prio-low":up<0?"prio-high":"");cell.textContent=up==null?"–":(up>0?"+":"")+up;}
       renderTobeChart();renderBarriers();break}
     case "playerName":{const p=find(S.players,d.id);if(p)p.name=val;renderCanvasChart();break}
+    case "playerColor":{const p=find(S.players,d.id);if(p)p.color=val;renderCanvasChart();renderTobeChart();break}
+    case "propScore":{const P=P_(d.k);P.scores[d.f]=P.scores[d.f]||{};P.scores[d.f][d.p]=val===""?null:clamp(val,0,10);renderPropCanvasChart(d.k);renderPropTobeTable(d.k);renderPropTobeChart(d.k);break}
+    case "propFactorName":{const P=P_(d.k);const f=find(P.factors,d.id);if(f)f.name=val;renderPropErrc(d.k);renderPropTobeTable(d.k);renderPropCanvasChart(d.k);renderPropTobeChart(d.k);break}
+    case "propFactorNote":{const P=P_(d.k);const f=find(P.factors,d.id);if(f)f.note=val;renderPropNotes(d.k);break}
+    case "propPlayerName":{const P=P_(d.k);const p=find(P.players,d.id);if(p)p.name=val;renderPropCanvasChart(d.k);break}
+    case "propColor":{const P=P_(d.k);const p=find(P.players,d.id);if(p)p.color=val;renderPropCanvasChart(d.k);renderPropTobeChart(d.k);break}
+    case "propErrc":{const P=P_(d.k);P.errc[d.id]=val;renderPropErrc(d.k);renderPropTobeTable(d.k);renderPropCanvasChart(d.k);renderPropTobeChart(d.k);break}
+    case "propTobe":{const P=P_(d.k);P.tobe[d.id]=val===""?null:clamp(val,0,10);
+      const row=e.target.closest("tr");
+      if(row){const c=propCompany(d.k);const now=(c&&P.scores[d.id]&&P.scores[d.id][c.id]!=null)?+P.scores[d.id][c.id]:null;const tb=P.tobe[d.id];const up=(now!=null&&tb!=null)?(tb-now):null;const cell=row.lastElementChild;cell.className="num mono "+(up>0?"prio-low":up<0?"prio-high":"");cell.textContent=up==null?"–":(up>0?"+":"")+up;}
+      renderPropTobeChart(d.k);break}
     case "bStr":{S.barriers[d.f][d.i].strength=val===""?null:clamp(val,1,5);updateBarrierKpis();break}
     case "bNote":{S.barriers[d.f][d.i].note=val;break}
     case "pName":{find(S.products,d.id).name=val;renderPmsNow();renderPmsFut();break}
@@ -1304,6 +1464,10 @@ document.getElementById("metaMarket").addEventListener("input",e=>{S.meta.market
 document.addEventListener("change",e=>{
   const a=e.target.dataset.act;if(!a)return;const d=e.target.dataset;
   if(a==="bType"){S.barriers[d.f][d.i].type=e.target.value;save()}
+  if(a==="playerDash"){const p=find(S.players,d.id);if(p)p.dash=(e.target.value==="dashed");renderCanvasChart();renderTobeChart();save()}
+  if(a==="playerColor"){const p=find(S.players,d.id);if(p)p.color=e.target.value;renderCanvasChart();renderTobeChart();save()}
+  if(a==="propDash"){const P=P_(d.k);const p=find(P.players,d.id);if(p)p.dash=(e.target.value==="dashed");renderPropCanvasChart(d.k);renderPropTobeChart(d.k);save()}
+  if(a==="propColor"){const P=P_(d.k);const p=find(P.players,d.id);if(p)p.color=e.target.value;renderPropCanvasChart(d.k);renderPropTobeChart(d.k);save()}
 });
 
 document.addEventListener("click",e=>{
@@ -1322,6 +1486,10 @@ document.addEventListener("click",e=>{
     case "capAdd":{S.capabilities.push({id:uid("c"),cat:d.cat,name:"",existing:"",tobe:"",priority:"med"});renderCapabilities();save();break}
     case "capDel":{S.capabilities=S.capabilities.filter(x=>x.id!==d.id);renderCapabilities();save();break}
     case "nsDel":{S.nextSteps=S.nextSteps.filter(x=>x.id!==d.id);renderNextSteps();save();break}
+    case "propAddFactor":{const P=P_(d.k);const f={id:uid("f"),name:(LANG==="ua"?"Новий фактор":"New factor"),note:""};P.factors.push(f);P.scores[f.id]={};P.players.forEach(p=>{P.scores[f.id][p.id]=5});P.tobe[f.id]=5;renderProp(d.k);save();break}
+    case "propAddPlayer":{const P=P_(d.k);const cnt=P.players.filter(p=>!p.isCompany).length;const np={id:uid("p"),name:(LANG==="ua"?"Конкурент":"Competitor")+" "+(cnt+1),isCompany:false,color:PEER_COLORS[cnt%PEER_COLORS.length],dash:false};P.players.push(np);P.factors.forEach(f=>{P.scores[f.id]=P.scores[f.id]||{};P.scores[f.id][np.id]=5});renderProp(d.k);save();break}
+    case "propDelFactor":{const P=P_(d.k);P.factors=P.factors.filter(f=>f.id!==d.id);delete P.scores[d.id];delete P.tobe[d.id];delete P.errc[d.id];renderProp(d.k);save();break}
+    case "propDelPlayer":{const P=P_(d.k);const p=find(P.players,d.id);if(p&&p.isCompany)return;P.players=P.players.filter(x=>x.id!==d.id);renderProp(d.k);save();break}
   }
 });
 document.getElementById("addFactor").onclick=()=>{
@@ -1330,7 +1498,7 @@ document.getElementById("addFactor").onclick=()=>{
   S.scores[f.id]={};S.players.forEach(p=>{S.scores[f.id][p.id]=5});
   S.tobe[f.id]=5;
   renderAll();save();};
-document.getElementById("addPlayer").onclick=()=>{const c=peerPlayers().length;S.players.push({id:uid("p"),name:(LANG==="ua"?"Конкурент":"Competitor")+" "+(c+1),isCompany:false,color:PEER_COLORS[c%PEER_COLORS.length]});renderCanvasTable();renderCanvasChart();renderTobeChart();save()};
+document.getElementById("addPlayer").onclick=()=>{const c=peerPlayers().length;S.players.push({id:uid("p"),name:(LANG==="ua"?"Конкурент":"Competitor")+" "+(c+1),isCompany:false,color:PEER_COLORS[c%PEER_COLORS.length],dash:false});renderCanvasTable();renderCanvasChart();renderTobeChart();save()};
 document.getElementById("addProduct").onclick=()=>{S.products.push({id:uid("pr"),name:(LANG==="ua"?"Продукт":"Product"),company:resolveCompanyName(),smpNow:50,shareNow:10,revNow:100,smpFut:null,shareFut:null,revFut:null});renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();save()};
 document.getElementById("addFutureProduct").onclick=()=>{const cn=resolveCompanyName();if(!S.meta.company)S.meta.company=cn;S.products.push({id:uid("pr"),name:(LANG==="ua"?"Продукт":"Product"),company:cn,smpNow:50,shareNow:10,revNow:100,smpFut:65,shareFut:15,revFut:140});document.getElementById("metaCompany").value=S.meta.company||"";renderProductTable();renderFutureTable();renderPmsNow();renderPmsFut();save()};
 document.getElementById("addUnit").onclick=()=>{S.units.push({id:uid("u"),name:(LANG==="ua"?"Підрозділ":"Unit")});renderDeployMatrix();save()};
@@ -1378,7 +1546,7 @@ document.getElementById("btnPdf").onclick=()=>{window.print()};
 document.getElementById("btnExample").onclick=loadExample;
 
 /* nav active state on scroll */
-const secs=["tool1","tool2","tool3","tool4","tool5","tool6","tool7","tool8","tool9"];
+const secs=["tool1","tool2","toolProfit","toolPeople","tool3","tool4","tool5","tool6","tool7","tool8","tool9"];
 const obs=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){
   document.querySelectorAll(".navitem").forEach(n=>n.classList.toggle("active",n.getAttribute("href")==="#"+en.target.id))}})},{rootMargin:"-30% 0px -60% 0px"});
 secs.forEach(id=>obs.observe(document.getElementById(id)));
@@ -1521,9 +1689,156 @@ function loadExample(){
   LANG=S.meta.lang;
   document.getElementById("langEN").classList.toggle("on",LANG==="en");
   document.getElementById("langUA").classList.toggle("on",LANG==="ua");
-  renderAll();takeSnapshotSilent("Baseline");save();
+  (function(){
+    function seedProp(k,facs,sc,errcArr,tobeArr,peerName){
+      const P=blankProp();
+      P.players=[{id:uid("p"),name:"monobank",isCompany:true,color:"#0B6FA4",dash:false},
+        {id:uid("p"),name:peerName,isCompany:false,color:"#C8472E",dash:false}];
+      facs.forEach((nm,i)=>{const f={id:uid("f"),name:nm,note:""};P.factors.push(f);
+        P.scores[f.id]={};P.players.forEach((p,j)=>{P.scores[f.id][p.id]=sc[i][j]});
+        P.errc[f.id]=errcArr[i];P.tobe[f.id]=tobeArr[i];});
+      S.props[k]=P;
+    }
+    const peer=(LANG==="ua"?"Конкурент":"Competitor 1");
+    const profEn=["Fee & commission income","Interest margin","Cost-to-serve per client","Cross-sell revenue","Float / deposit funding"];
+    const profUa=["Дохід від комісій","Процентна маржа","Вартість обслуговування клієнта","Дохід від крос-продажів","Фондування депозитами"];
+    seedProp("profit",(LANG==="ua"?profUa:profEn),
+      [[6,6],[6,7],[9,7],[7,5],[6,8]],
+      ["reduce","raise","reduce","create","raise"],
+      [4,8,3,9,8],peer);
+    const peoEn=["Engineering talent density","Autonomy of product teams","Learning & growth","Performance incentives","Partner ecosystem enablement"];
+    const peoUa=["Щільність інженерних талантів","Автономія продуктових команд","Навчання та розвиток","Стимули за результат","Розвиток партнерської екосистеми"];
+    seedProp("people",(LANG==="ua"?peoUa:peoEn),
+      [[9,5],[9,4],[8,5],[8,6],[7,5]],
+      ["create","raise","raise","raise","create"],
+      [10,9,9,9,8],peer);
+  })();
+  normalize();renderAll();takeSnapshotSilent("Baseline");save();
 }
 function takeSnapshotSilent(lbl){const m=computeMetrics();S.snapshots.push({date:new Date().toISOString(),label:lbl,m});renderSnapshots()}
+
+
+/* ============================ Profit & People propositions (03, 04) ============================ */
+const PROP_KEYS=["profit","people"];
+let dragProp={key:null,fid:null};
+function P_(k){return S.props[k];}
+function propCompany(k){return P_(k).players.find(p=>p.isCompany);}
+function renderPropTable(k){
+  const P=P_(k);const tb=document.getElementById(k+"Table");if(!tb)return;
+  let h="<thead><tr><th class='drag-h'></th><th style='min-width:150px'>"+t("factor")+"</th>";
+  P.players.forEach(p=>{h+="<th class='num'><input class='pcolor' type='color' data-act='propColor' data-k='"+k+"' data-id='"+p.id+"' value='"+p.color+"' title='line colour'>"+
+    "<input class='player-name' data-act='propPlayerName' data-k='"+k+"' data-id='"+p.id+"' value='"+esc(p.name)+"'>"+
+    "<button class='cell-x' data-act='propDelPlayer' data-k='"+k+"' data-id='"+p.id+"'>×</button>"+
+    "<select class='pdash' data-act='propDash' data-k='"+k+"' data-id='"+p.id+"' title='line pattern'><option value='solid'"+(p.dash?"":" selected")+">──</option><option value='dashed'"+(p.dash?" selected":"")+">– –</option></select>"+
+    "</th>"});
+  h+="<th class='num'>"+t("classification")+"</th></tr></thead><tbody>";
+  P.factors.forEach(f=>{
+    h+="<tr draggable='true' data-fid='"+f.id+"'>";
+    h+="<td class='drag-h' title='drag to reorder'>⠿</td>";
+    h+="<td><input data-act='propFactorName' data-k='"+k+"' data-id='"+f.id+"' value='"+esc(f.name)+"'> "+
+      "<button class='cell-x' data-act='propDelFactor' data-k='"+k+"' data-id='"+f.id+"'>×</button>"+
+      "<input class='note-inp' data-act='propFactorNote' data-k='"+k+"' data-id='"+f.id+"' placeholder='"+t("notePh")+"' value='"+esc(f.note||"")+"'></td>";
+    P.players.forEach(p=>{
+      const v=(P.scores[f.id]&&P.scores[f.id][p.id]!=null)?P.scores[f.id][p.id]:"";
+      h+="<td class='num'><input class='score' type='number' min='0' max='10' step='0.5' data-act='propScore' data-k='"+k+"' data-f='"+f.id+"' data-p='"+p.id+"' value='"+v+"'></td>";
+    });
+    const cls=P.errc[f.id]||"";
+    h+="<td><select data-act='propErrc' data-k='"+k+"' data-id='"+f.id+"'>"+
+      "<option value=''"+(cls===""?" selected":"")+">"+t("none")+"</option>"+
+      ["eliminate","reduce","raise","create"].map(c=>"<option value='"+c+"'"+(cls===c?" selected":"")+">"+t(c)+"</option>").join("")+
+      "</select></td></tr>";
+  });
+  h+="</tbody>";tb.innerHTML=h;attachPropDrag(tb,k);
+}
+function attachPropDrag(tb,k){
+  tb.querySelectorAll("tr[draggable]").forEach(row=>{
+    row.addEventListener("dragstart",e=>{dragProp={key:k,fid:row.dataset.fid};row.classList.add("dragging");try{e.dataTransfer.effectAllowed="move"}catch(_){}});
+    row.addEventListener("dragend",()=>{dragProp={key:null,fid:null};tb.querySelectorAll("tr").forEach(r=>r.classList.remove("dragging","drag-over"))});
+    row.addEventListener("dragover",e=>{e.preventDefault();row.classList.add("drag-over")});
+    row.addEventListener("dragleave",()=>row.classList.remove("drag-over"));
+    row.addEventListener("drop",e=>{e.preventDefault();const tf=row.dataset.fid;
+      if(dragProp.key!==k||!dragProp.fid||dragProp.fid===tf)return;
+      const P=P_(k);const from=P.factors.findIndex(f=>f.id===dragProp.fid),to=P.factors.findIndex(f=>f.id===tf);
+      if(from<0||to<0)return;const mv=P.factors.splice(from,1)[0];P.factors.splice(to,0,mv);
+      renderProp(k);save();});
+  });
+}
+function renderPropErrc(k){
+  const P=P_(k);const g=document.getElementById(k+"Errc");if(!g)return;
+  const map={eliminate:[],reduce:[],raise:[],create:[]};
+  P.factors.forEach(f=>{const c=P.errc[f.id];if(map[c])map[c].push(f.name)});
+  const block=(key)=>{const chips=map[key].length?map[key].map(n=>"<span class='chip'>"+esc(n)+"</span>").join(""):"<span class='empty'>—</span>";
+    return "<div class='q "+key+"'><h4><span class='tag'></span>"+t(key)+"</h4>"+chips+"</div>";};
+  g.innerHTML=block("eliminate")+block("reduce")+block("raise")+block("create");
+}
+function renderPropNotes(k){
+  const P=P_(k);["Notes","TobeNotes"].forEach(sfx=>{const el=document.getElementById(k+sfx);if(!el)return;
+    const wn=P.factors.filter(f=>f.note&&f.note.trim());
+    el.innerHTML=wn.map(f=>"<span><b>"+esc(f.name)+"</b> — "+esc(f.note)+"</span>").join("");});
+}
+function renderPropTobeTable(k){
+  const P=P_(k);const tb=document.getElementById(k+"TobeTable");if(!tb)return;const c=propCompany(k);
+  let h="<thead><tr><th style='min-width:150px'>"+t("factor")+"</th><th class='num'>ERRC</th><th class='num'>"+t("colNow")+"</th><th class='num' style='background:#eaf3f9'>"+t("colTobe")+"</th><th class='num'>"+t("colUplift")+"</th></tr></thead><tbody>";
+  P.factors.forEach(f=>{
+    const now=(c&&P.scores[f.id]&&P.scores[f.id][c.id]!=null)?+P.scores[f.id][c.id]:null;
+    const tobeRaw=P.tobe[f.id]!=null?P.tobe[f.id]:"";
+    const tobe=tobeRaw===""?null:+tobeRaw;
+    const cls=P.errc[f.id]||"";
+    const up=(now!=null&&tobe!=null)?(tobe-now):null;
+    const upCls=up>0?"prio-low":up<0?"prio-high":"";
+    h+="<tr><td>"+esc(f.name)+"</td><td class='num'>"+(cls?t(cls):"—")+"</td>"+
+      "<td class='num mono'>"+(now==null?"–":now)+"</td>"+
+      "<td class='num' style='background:#f5fafd'><input class='score' type='number' min='0' max='10' step='0.5' data-act='propTobe' data-k='"+k+"' data-id='"+f.id+"' value='"+tobeRaw+"'></td>"+
+      "<td class='num mono "+upCls+"'>"+(up==null?"–":(up>0?"+":"")+up)+"</td></tr>";
+  });
+  h+="</tbody>";tb.innerHTML=h;
+}
+function propLineDatasets(k,useTobe){
+  const P=P_(k);const ds=[];const labels=P.factors.map(f=>f.name);const c=propCompany(k);
+  if(useTobe){
+    if(c){ds.push({label:t("yourNow"),data:P.factors.map(f=>(P.scores[f.id]&&P.scores[f.id][c.id]!=null)?+P.scores[f.id][c.id]:null),borderColor:c.color,backgroundColor:c.color,borderDash:c.dash?[6,4]:undefined,borderWidth:2.5,tension:.25,pointRadius:3,spanGaps:true});}
+    ds.push({label:t("yourTobe"),data:P.factors.map(f=>P.tobe[f.id]!=null?+P.tobe[f.id]:null),borderColor:(c?c.color:"#0B6FA4"),backgroundColor:(c?c.color:"#0B6FA4"),borderWidth:2.5,borderDash:[6,4],tension:.25,pointRadius:3,spanGaps:true});
+    const peers=P.players.filter(p=>!p.isCompany);
+    if(peers.length){const avg=P.factors.map(f=>{const vs=peers.map(p=>(P.scores[f.id]&&P.scores[f.id][p.id]!=null)?+P.scores[f.id][p.id]:null).filter(v=>v!=null);return vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:null});
+      ds.push({label:t("peerAvg"),data:avg,borderColor:"#C8472E",backgroundColor:"#C8472E",borderWidth:1.5,tension:.25,pointRadius:2,spanGaps:true,borderDash:[2,2]});}
+  }else{
+    P.players.forEach(p=>{ds.push({label:p.name,data:P.factors.map(f=>(P.scores[f.id]&&P.scores[f.id][p.id]!=null)?+P.scores[f.id][p.id]:null),borderColor:p.color,backgroundColor:p.color,borderDash:p.dash?[6,4]:undefined,borderWidth:p.isCompany?3:1.8,tension:.25,pointRadius:p.isCompany?4:3,spanGaps:true});});
+  }
+  return {labels,ds};
+}
+function propChartOpts(P){return {responsive:true,maintainAspectRatio:false,
+  scales:{y:{min:0,max:10,title:{display:true,text:LANG==="ua"?"Рівень пропозиції":"Offering level"}},x:{ticks:{maxRotation:38,minRotation:0,autoSkip:false,font:{size:10}}}},
+  plugins:{errcBand:{factors:P.factors,errc:P.errc},legend:{position:"bottom",labels:{boxWidth:18,font:{size:11}}}}};}
+function renderPropCanvasChart(k){
+  const P=P_(k);const{labels,ds}=propLineDatasets(k,false);destroy(k+"Canvas");
+  charts[k+"Canvas"]=new Chart(document.getElementById(k+"Canvas"),{type:"line",plugins:[errcBand],data:{labels,datasets:ds},options:propChartOpts(P)});
+  legendInto(k+"Legend",P.players.map(p=>({c:p.color,l:p.name,line:true})));
+  renderPropNotes(k);
+}
+function renderPropTobeChart(k){
+  const P=P_(k);const{labels,ds}=propLineDatasets(k,true);destroy(k+"TobeCanvas");
+  charts[k+"TobeCanvas"]=new Chart(document.getElementById(k+"TobeCanvas"),{type:"line",plugins:[errcBand],data:{labels,datasets:ds},options:propChartOpts(P)});
+}
+function renderProp(k){renderPropTable(k);renderPropErrc(k);renderPropCanvasChart(k);renderPropTobeTable(k);renderPropTobeChart(k);}
+function renderPropsAll(){PROP_KEYS.forEach(renderProp);}
+
+/* ============================ Editable chart headers & explanations ============================ */
+function initEditableLabels(){
+  document.querySelectorAll("section.tool h2[data-i18n], section.tool .desc[data-i18n], .chart-wrap h4[data-i18n]").forEach(el=>{
+    el.setAttribute("contenteditable","true");el.classList.add("editlabel");el.spellcheck=false;
+    if(!el.getAttribute("title"))el.setAttribute("title",LANG==="ua"?"Натисніть, щоб редагувати":"Click to edit");
+  });
+}
+document.addEventListener("focusout",e=>{
+  const el=e.target; if(!el.classList||!el.classList.contains("editlabel"))return;
+  const k=el.getAttribute("data-i18n"); const txt=(el.textContent||"").replace(/\s+/g," ").trim();
+  if(txt===""||txt===t(k)){delete S.labels[k];el.textContent=t(k);} else {S.labels[k]=txt;}
+  save();
+});
+document.addEventListener("keydown",e=>{
+  const el=e.target;
+  if(el.classList&&el.classList.contains("editlabel")&&e.key==="Enter"){e.preventDefault();el.blur();}
+});
 
 /* ============================ Boot ============================ */
 (function boot(){
@@ -1540,6 +1855,7 @@ function takeSnapshotSilent(lbl){const m=computeMetrics();S.snapshots.push({date
   document.getElementById("verTag").textContent=BUILD;
   console.log("Blue Ocean Workbench — "+BUILD);
   renderAll();
+  initEditableLabels();
   initCollapsibles();
   try{
     const _m=document.querySelector("main");
