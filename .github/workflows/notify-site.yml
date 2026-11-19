@@ -1,0 +1,19 @@
+name: Rebuild octopus-site
+# octopus-site serves this tool under octopus-capital.ventures/tools/. A push to main triggers its build.
+# Skipped until the SITE_DISPATCH_TOKEN secret exists (fine-grained token, Actions: read and write on babak-oak/octopus-site).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the octopus-site build
+        env:
+          GH_TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "SITE_DISPATCH_TOKEN is not set, skipping"; exit 0; fi
+          gh workflow run build.yml -R babak-oak/octopus-site
