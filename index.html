@@ -749,16 +749,36 @@ const OC=(function(){
     if(error){notice(L("Не вдалося зробити копію: ","Could not make a copy: ")+error.message,"bad");return}
     location.href=urlWith({p:data.id});
   }
-  async function share(){
-    if(st.mode!=="cloud"){await saveToCabinet();if(st.mode!=="cloud")return}
+  // Phones (Safari) allow writing to the clipboard only during the tap, so the copy starts right away
+  // with the link still being prepared; otherwise the box offers «Копіювати» and the phone's «Поділитися».
+  function copyWhenReady(p){
+    try{if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+      const blob=p.then(t=>new Blob([t],{type:"text/plain"}));
+      return navigator.clipboard.write([new ClipboardItem({"text/plain":blob})]).then(()=>true,()=>p.then(copyNow));}}catch(e){}
+    return p.then(copyNow);
+  }
+  async function copyNow(text){
+    try{await navigator.clipboard.writeText(text);return true}catch(e){}
+    try{const ta=document.createElement("textarea");ta.value=text;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";
+      document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,text.length);const ok=document.execCommand("copy");ta.remove();return ok}catch(e){return false}
+  }
+  async function prepareLink(){
+    if(st.mode!=="cloud"){await saveToCabinet();if(st.mode!=="cloud")throw new Error("")}
     await flush();
     let {data}=await sb.from("strategy_share_links").select("token,created_at").eq("project_id",st.id).is("revoked_at",null).order("created_at",{ascending:false}).limit(1);
     let link=data&&data[0];
     if(!link){const r=await sb.from("strategy_share_links").insert({project_id:st.id}).select("token,created_at").single();
-      if(r.error){notice(L("Не вдалося створити посилання: ","Could not create a link: ")+r.error.message,"bad");return}link=r.data}
-    st.link=location.origin+urlWith({s:link.token});
-    let copied=false;try{await navigator.clipboard.writeText(st.link);copied=true}catch(e){}
-    showShare(link.token,copied);
+      if(r.error){notice(L("Не вдалося створити посилання: ","Could not create a link: ")+r.error.message,"bad");throw new Error("")}link=r.data}
+    st.link=location.origin+urlWith({s:link.token});st.linkToken=link.token;
+    return st.link;
+  }
+  async function share(){
+    const p=prepareLink();
+    // copy only when the work is already in the cabinet: the first save changes the address, keep it simple
+    const copiedP=st.mode==="cloud"?copyWhenReady(p).catch(()=>false):Promise.resolve(false);
+    try{await p}catch(e){return}
+    const copied=await copiedP;
+    showShare(st.linkToken,copied);
   }
   async function revoke(token){
     const {error}=await sb.from("strategy_share_links").update({revoked_at:new Date().toISOString()}).eq("token",token);
@@ -773,6 +793,8 @@ const OC=(function(){
     box.innerHTML="<b>"+L("Посилання для перегляду","View-only link")+"</b>"+
       "<input readonly value='"+esc_(st.link)+"' onclick='this.select()'>"+
       "<span class='oc-muted'>"+(copied?L("Скопійовано. ","Copied. "):"")+L("Хто відкриє посилання, побачить роботу без змін і зможе зробити собі копію.","Anyone with the link sees the work read-only and can make their own copy.")+"</span>"+
+      "<button class='btn' data-oc='copyLink'>"+L("Копіювати","Copy")+"</button>"+
+      (navigator.share?"<button class='btn' data-oc='nativeShare'>"+L("Поділитися…","Share…")+"</button>":"")+
       "<button class='btn' data-oc='revoke' data-token='"+esc_(token)+"'>"+L("Відкликати","Revoke")+"</button>"+
       "<button class='btn ghost' data-oc='closeShare'>×</button>";
   }
@@ -800,7 +822,9 @@ const OC=(function(){
   document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-oc]");if(!b)return;
     const a=b.getAttribute("data-oc");
     if(a==="save")saveToCabinet();else if(a==="share")share();else if(a==="copy")makeCopy();
-    else if(a==="revoke")revoke(b.getAttribute("data-token"));else if(a==="closeShare")document.getElementById("ocShare").hidden=true;});
+    else if(a==="revoke")revoke(b.getAttribute("data-token"));else if(a==="closeShare")document.getElementById("ocShare").hidden=true;
+    else if(a==="copyLink")copyNow(st.link).then(ok=>{b.textContent=ok?L("Скопійовано","Copied"):L("Виділіть і скопіюйте вручну","Select and copy manually")});
+    else if(a==="nativeShare")navigator.share({title:(st.name||"Strategizer")+" — Strategizer",url:st.link}).catch(()=>{});});
   window.addEventListener("beforeunload",e=>{if(st.mode==="cloud"&&(st.dirty||st.saving)){flush();e.preventDefault();e.returnValue=""}});
 
   /* view only: no input reaches the data */
