@@ -44,7 +44,7 @@ The workbench is organised as an eight-step strategy workflow:
 Using only the GitHub website (no git required):
 
 1. Create a new **public** repository, e.g. `blue-ocean-workbench`.
-2. **Add file → Upload files**, drag in `index.html` (and this `README.md`), then **Commit changes**.
+2. **Add file → Upload files**, drag in `index.html`, the `fonts/` and `vendor/` folders (and this `README.md`), then **Commit changes**.
 3. **Settings → Pages → Source:** *Deploy from a branch*, branch **main**, folder **/ (root)**, **Save**.
 4. Wait ~1 minute; the live URL appears on that settings screen:
    `https://<your-username>.github.io/blue-ocean-workbench/`
@@ -55,8 +55,10 @@ The file is named `index.html` so Pages serves it at the repo root with nothing 
 
 ## Technical notes
 
-- **Stack:** plain HTML / CSS / vanilla JavaScript, with [Chart.js](https://www.chartjs.org/) and Google Fonts loaded from CDNs.
-- **Connectivity:** an internet connection is needed to render charts (Chart.js is loaded from a CDN). All logic and data handling are local.
+- **Stack:** plain HTML / CSS / vanilla JavaScript, with [Chart.js](https://www.chartjs.org/) 4.4.1 in `vendor/` and the Space Grotesk, Inter and IBM Plex Mono fonts in `fonts/` (from Fontsource, SIL Open Font License).
+- **Connectivity:** nothing is loaded from third-party servers, so the workbench works offline once the files are on disk. All logic and data handling are local.
+- **Files:** keep `index.html`, `fonts/` and `vendor/` together when copying or publishing.
+- **Octopus site:** published at `octopus-capital.ventures/tools/blue-ocean/app/` by `babak-oak/octopus-site`; `.github/workflows/notify-site.yml` triggers that build on each push.
 - **Data:** stored in each visitor's own browser (`localStorage`). Nothing is sent anywhere. Anyone opening the link starts with a blank workbench and can use **Load example** or **Import JSON**. Older saved files load fine — missing sections are filled in automatically.
 - **Browser support:** any current Chrome, Edge, Firefox, or Safari.
 
