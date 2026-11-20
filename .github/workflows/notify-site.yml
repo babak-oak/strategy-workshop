@@ -16,4 +16,4 @@ jobs:
           GH_TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
         run: |
           if [ -z "$GH_TOKEN" ]; then echo "SITE_DISPATCH_TOKEN is not set, skipping"; exit 0; fi
-          gh workflow run build.yml -R babak-oak/octopus-site
+          gh api -X POST repos/babak-oak/octopus-site/actions/workflows/build.yml/dispatches -f ref=main  # REST: needs only Actions write
